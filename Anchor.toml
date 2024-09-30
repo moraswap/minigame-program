@@ -1,0 +1,18 @@
+[features]
+seeds = false
+[programs.localnet]
+minigame = "7bumD7T74PT4oneNgJgcxzuMa7B4cyh5hRyyT8jH4sXa"
+ticketbox = "6nJR2c9Yj5KdH1GZ9nPKsaHhLKhPW83Men4UgkvUK3Hf"
+[programs.devnet]
+minigame = "7bumD7T74PT4oneNgJgcxzuMa7B4cyh5hRyyT8jH4sXa"
+ticketbox = "6nJR2c9Yj5KdH1GZ9nPKsaHhLKhPW83Men4UgkvUK3Hf"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p tsconfig.json -t 1000000 tests/*.ts"

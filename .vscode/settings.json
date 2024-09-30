@@ -1,0 +1,7 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./programs/minigame/Cargo.toml",
+        "./programs/ticketbox/Cargo.toml"
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
+}
