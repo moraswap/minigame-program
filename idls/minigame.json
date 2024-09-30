@@ -1,0 +1,727 @@
+{
+  "version": "0.1.0",
+  "name": "minigame",
+  "instructions": [
+    {
+      "name": "initializeConfig",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ticketTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "authority",
+          "type": "publicKey"
+        },
+        {
+          "name": "operator",
+          "type": "publicKey"
+        },
+        {
+          "name": "ticketTokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "feeRate",
+          "type": "u16"
+        },
+        {
+          "name": "lockedTokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "lockTime",
+          "type": "u64"
+        },
+        {
+          "name": "rewardTokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "matchTime",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateAuthority",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateOperator",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "newOperator",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "pauseOrResume",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateTicketTokenAmount",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "ticketTokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateFeeRate",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "feeRate",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "updateLockedTokenAmount",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "lockedTokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateLockTime",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "lockTime",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateRewardTokenAmount",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "rewardTokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateMatchTime",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "matchTime",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "depositRewardToken",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenFromVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdrawRewardToken",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenToVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "play",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "playmatch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "matchMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ticketTokenUserVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenUserVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "fulfill",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "operator",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "playmatch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ticketTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketTokenUserVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenUserVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenUserVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "isWin",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "unlock",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "operator",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "playmatch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenUserVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GameConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "operator",
+            "type": "publicKey"
+          },
+          {
+            "name": "isPause",
+            "type": "bool"
+          },
+          {
+            "name": "ticketTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
+          },
+          {
+            "name": "lockedTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "lockedTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "lockedTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "lockTime",
+            "type": "u64"
+          },
+          {
+            "name": "rewardTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "rewardTokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "rewardTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "matchTime",
+            "type": "u64"
+          },
+          {
+            "name": "transferAuthorityBump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlayMatch",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "publicKey"
+          },
+          {
+            "name": "matchMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "user",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "lockedTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "lockedTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "rewardTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "rewardTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "endTime",
+            "type": "u64"
+          },
+          {
+            "name": "isWin",
+            "type": "bool"
+          },
+          {
+            "name": "isFulfilled",
+            "type": "bool"
+          },
+          {
+            "name": "unlockTime",
+            "type": "u64"
+          },
+          {
+            "name": "isUnlocked",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "FeeRateMaxExceeded",
+      "msg": "FeeRateMaxExceeded"
+    },
+    {
+      "code": 6001,
+      "name": "Paused",
+      "msg": "Paused"
+    },
+    {
+      "code": 6002,
+      "name": "TooEarly",
+      "msg": "TooEarly"
+    },
+    {
+      "code": 6003,
+      "name": "Fulfilled",
+      "msg": "Fulfilled"
+    },
+    {
+      "code": 6004,
+      "name": "Unlocked",
+      "msg": "Unlocked"
+    },
+    {
+      "code": 6005,
+      "name": "CannotUnlock",
+      "msg": "CannotUnlock"
+    },
+    {
+      "code": 6006,
+      "name": "AddOverflow",
+      "msg": "AddOverflow"
+    },
+    {
+      "code": 6007,
+      "name": "SubOverflow",
+      "msg": "SubOverflow"
+    },
+    {
+      "code": 6008,
+      "name": "MulOverflow",
+      "msg": "MulOverflow"
+    },
+    {
+      "code": 6009,
+      "name": "DivByZero",
+      "msg": "DivByZero"
+    }
+  ],
+  "metadata": {
+    "address": "7bumD7T74PT4oneNgJgcxzuMa7B4cyh5hRyyT8jH4sXa"
+  }
+}
