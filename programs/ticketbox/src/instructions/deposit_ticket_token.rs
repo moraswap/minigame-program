@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
 use ticketbox_config::TicketboxConfig;
@@ -26,5 +26,14 @@ pub fn handler(ctx: Context<DepositTicketToken>, amount: u64) -> Result<()> {
         ctx.accounts.funder.to_account_info(),
         amount,
     )?;
+
+    emit!(DepositTicketTokenEvent {
+        header: EventHeader {
+            signer: Some(ctx.accounts.funder.key()),
+            config: ctx.accounts.config.key(),
+        },
+        funder: ctx.accounts.funder.key(),
+        amount: amount,
+    });
     Ok(())
 }

@@ -1,6 +1,4 @@
-use crate::errors::ErrorCode;
-use crate::math::*;
-use crate::state::*;
+use crate::{errors::ErrorCode, events::*, math::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use game_config::GameConfig;
@@ -125,5 +123,13 @@ pub fn handler(ctx: Context<Fulfill>, is_win: bool) -> Result<()> {
         }
     }
 
+    emit!(FulfillEvent {
+        header: MatchEventHeader {
+            signer: Some(ctx.accounts.operator.key()),
+            config: ctx.accounts.config.key(),
+            playmatch: ctx.accounts.playmatch.key(),
+        },
+        is_win: is_win,
+    });
     Ok(())
 }

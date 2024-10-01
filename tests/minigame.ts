@@ -852,7 +852,7 @@ describe("minigame", () => {
 
     const matchs_after = await program.account.playMatch.all();
     const match_after = matchs_after[1];
-    assert(match_after.account.unlockTime.gte(expected_unlock_time));
+    assert(match_after.account.unlockTime.sub(expected_unlock_time).abs().lte(new anchor.BN(1))); // |unlock_time - expected_unlock_time| <= 1
 
     const fee = match.account.ticketTokenAmount.mul(new anchor.BN(config_data.feeRate)).div(new anchor.BN(10000));
     const return_amount = match.account.ticketTokenAmount.sub(fee);

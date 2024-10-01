@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
 use game_config::GameConfig;
@@ -46,5 +46,12 @@ pub fn handler(ctx: Context<Unlock>) -> Result<()> {
         )?;
     }
 
+    emit!(UnlockEvent {
+        header: MatchEventHeader {
+            signer: Some(ctx.accounts.operator.key()),
+            config: ctx.accounts.config.key(),
+            playmatch: ctx.accounts.playmatch.key(),
+        },
+    });
     Ok(())
 }

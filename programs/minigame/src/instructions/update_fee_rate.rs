@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use game_config::GameConfig;
 
@@ -12,8 +12,17 @@ pub struct UpdateFeeRate<'info> {
 }
 
 pub fn handler(ctx: Context<UpdateFeeRate>, fee_rate: u16) -> Result<()> {
-    ctx.accounts
-        .config
-        .update_fee_rate(fee_rate)?;
+    let old_fee_rate = ctx.accounts.config.fee_rate;
+
+    ctx.accounts.config.update_fee_rate(fee_rate)?;
+
+    emit!(UpdateFeeRateEvent {
+        header: ConfigEventHeader {
+            signer: Some(ctx.accounts.authority.key()),
+            config: ctx.accounts.config.key(),
+        },
+        old_fee_rate: old_fee_rate,
+        new_fee_rate: fee_rate,
+    });
     Ok(())
 }

@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use game_config::GameConfig;
 
@@ -12,8 +12,17 @@ pub struct UpdateLockTime<'info> {
 }
 
 pub fn handler(ctx: Context<UpdateLockTime>, lock_time: u64) -> Result<()> {
-    ctx.accounts
-        .config
-        .update_lock_time(lock_time);
+    let old_lock_time = ctx.accounts.config.lock_time;
+
+    ctx.accounts.config.update_lock_time(lock_time);
+
+    emit!(UpdateLockTimeEvent {
+        header: ConfigEventHeader {
+            signer: Some(ctx.accounts.authority.key()),
+            config: ctx.accounts.config.key(),
+        },
+        old_lock_time: old_lock_time,
+        new_lock_time: lock_time,
+    });
     Ok(())
 }

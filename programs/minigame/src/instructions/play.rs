@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use game_config::GameConfig;
@@ -84,5 +84,18 @@ pub fn handler(ctx: Context<Play>) -> Result<()> {
     ctx.accounts
         .playmatch
         .initialize(config, ctx.accounts.match_mint.key(), user)?;
+
+    emit!(PlayEvent {
+        header: MatchEventHeader {
+            signer: Some(ctx.accounts.funder.key()),
+            config: config.key(),
+            playmatch: ctx.accounts.playmatch.key(),
+        },
+        funder: ctx.accounts.funder.key(),
+        match_mint: ctx.accounts.match_mint.key(),
+        ticket_token_amount: config.ticket_token_amount,
+        locked_token_amount: config.locked_token_amount,
+        reward_token_amount: config.reward_token_amount,
+    });
     Ok(())
 }

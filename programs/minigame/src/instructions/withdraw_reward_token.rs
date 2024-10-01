@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
 use game_config::GameConfig;
@@ -29,5 +29,14 @@ pub fn handler(ctx: Context<WithdrawRewardToken>, amount: u64) -> Result<()> {
         ctx.accounts.transfer_authority.to_account_info(),
         amount,
     )?;
+
+    emit!(WithdrawRewardTokenEvent {
+        header: ConfigEventHeader {
+            signer: Some(ctx.accounts.authority.key()),
+            config: ctx.accounts.config.key(),
+        },
+        reward_token_to_vault: ctx.accounts.reward_token_to_vault.key(),
+        amount: amount,
+    });
     Ok(())
 }

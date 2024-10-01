@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use ticketbox_config::TicketboxConfig;
@@ -81,5 +81,22 @@ pub fn handler(
         dev_percent,
         transfer_authority_bump,
     )?;
+
+    emit!(InitializeConfigEvent {
+        header: EventHeader {
+            signer: Some(ctx.accounts.funder.key()),
+            config: config.key(),
+        },
+        authority: authority,
+        ticket_token_mint: ticket_token_mint,
+        ticket_token_vault: ticket_token_vault,
+        currency_mint: currency_mint,
+        currency_vault: currency_vault,
+        ticket_price: ticket_price,
+        maker_vault: maker_vault,
+        maker_percent: maker_percent,
+        dev_vault: dev_vault,
+        dev_percent: dev_percent,
+    });
     Ok(())
 }

@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use game_config::GameConfig;
 
@@ -14,11 +14,18 @@ pub struct UpdateAuthority<'info> {
     pub new_authority: UncheckedAccount<'info>,
 }
 
-pub fn handler(
-    ctx: Context<UpdateAuthority>,
-) -> Result<()> {
+pub fn handler(ctx: Context<UpdateAuthority>) -> Result<()> {
     ctx.accounts
         .config
         .update_authority(ctx.accounts.new_authority.key());
+
+    emit!(UpdateAuthorityEvent {
+        header: ConfigEventHeader {
+            signer: Some(ctx.accounts.authority.key()),
+            config: ctx.accounts.config.key(),
+        },
+        old_authority: ctx.accounts.authority.key(),
+        new_authority: ctx.accounts.new_authority.key(),
+    });
     Ok(())
 }

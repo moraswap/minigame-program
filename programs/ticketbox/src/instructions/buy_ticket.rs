@@ -1,6 +1,4 @@
-use crate::math::*;
-// use crate::spl::*;
-use crate::state::*;
+use crate::{events::*, math::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
 use ticketbox_config::TicketboxConfig;
@@ -55,5 +53,15 @@ pub fn handler(ctx: Context<BuyTicket>, amount: u64) -> Result<u64> {
         )?;
     }
 
+    emit!(BuyTicketEvent {
+        header: EventHeader {
+            signer: Some(ctx.accounts.funder.key()),
+            config: ctx.accounts.config.key(),
+        },
+        funder: ctx.accounts.funder.key(),
+        ticket_token_user_vault: ctx.accounts.ticket_token_user_vault.key(),
+        ticket_amount: amount,
+        total_currency: total_currency,
+    });
     Ok(total_currency)
 }

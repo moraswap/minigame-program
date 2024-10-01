@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use game_config::GameConfig;
@@ -92,5 +92,27 @@ pub fn handler(
         reward_token_amount,
         match_time,
         transfer_authority_bump,
-    )
+    )?;
+
+    emit!(InitializeConfigEvent {
+        header: ConfigEventHeader {
+            signer: Some(ctx.accounts.funder.key()),
+            config: ctx.accounts.config.key(),
+        },
+        authority: authority,
+        operator: operator,
+        ticket_token_mint: ticket_token_mint,
+        ticket_token_vault: ticket_token_vault,
+        ticket_token_amount: ticket_token_amount,
+        fee_rate: fee_rate,
+        locked_token_mint: locked_token_mint,
+        locked_token_vault: locked_token_vault,
+        locked_token_amount: locked_token_amount,
+        lock_time: lock_time,
+        reward_token_mint: reward_token_mint,
+        reward_token_vault: reward_token_vault,
+        reward_token_amount: reward_token_amount,
+        match_time: match_time,
+    });
+    Ok(())
 }

@@ -5,6 +5,8 @@ declare_id!("6nJR2c9Yj5KdH1GZ9nPKsaHhLKhPW83Men4UgkvUK3Hf");
 #[doc(hidden)]
 pub mod errors;
 #[doc(hidden)]
+pub mod events;
+#[doc(hidden)]
 pub mod instructions;
 #[doc(hidden)]
 pub mod math;

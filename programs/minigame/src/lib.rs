@@ -5,6 +5,8 @@ declare_id!("7bumD7T74PT4oneNgJgcxzuMa7B4cyh5hRyyT8jH4sXa");
 #[doc(hidden)]
 pub mod errors;
 #[doc(hidden)]
+pub mod events;
+#[doc(hidden)]
 pub mod instructions;
 #[doc(hidden)]
 pub mod state;

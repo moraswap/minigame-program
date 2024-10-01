@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use ticketbox_config::TicketboxConfig;
 
@@ -12,8 +12,17 @@ pub struct UpdateTicketPrice<'info> {
 }
 
 pub fn handler(ctx: Context<UpdateTicketPrice>, ticket_price: u64) -> Result<()> {
-    ctx.accounts
-        .config
-        .update_ticket_price(ticket_price)?;
+    let old_ticket_price = ctx.accounts.config.ticket_price;
+
+    ctx.accounts.config.update_ticket_price(ticket_price)?;
+
+    emit!(UpdateTicketPriceEvent {
+        header: EventHeader {
+            signer: Some(ctx.accounts.authority.key()),
+            config: ctx.accounts.config.key(),
+        },
+        old_ticket_price: old_ticket_price,
+        new_ticket_price: ticket_price,
+    });
     Ok(())
 }
