@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Ticketbox } from "../target/types/ticketbox";
 import { assert, expect } from "chai";
 import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
-import { approveToken, createAssociatedTokenAccount, createMint, mintToDestination, transferToken } from "./utils/token";
+import { createAssociatedTokenAccount, createMint, mintToDestination } from "./utils/token";
 import { PublicKey } from "@solana/web3.js";
 
 function tokens(amount: string | number, decimals: number = 0): anchor.BN {
@@ -38,7 +38,6 @@ describe("ticketbox", () => {
   let currency_user_vault: PublicKey;
   let transfer_authority;
   let ticket_token_vault;
-  let currency_vault;
   let maker_vault: PublicKey;
   let maker2_vault: PublicKey;
   let dev_vault: PublicKey;
@@ -76,11 +75,6 @@ describe("ticketbox", () => {
       program.programId
     );
     console.log("ticket_token_vault", ticket_token_vault.toString());
-    [currency_vault,] = anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("currency"), config.publicKey.toBuffer()],
-      program.programId
-    );
-    console.log("currency_vault", currency_vault.toString());
 
     // setup initial balance of tokens
     await mintToDestination(provider, ticket_token_mint, ticket_token_user_vault, tokens("1000000", 9)); // 1000000 SOLO
@@ -103,7 +97,6 @@ describe("ticketbox", () => {
         ticketTokenMint: ticket_token_mint,
         ticketTokenVault: ticket_token_vault,
         currencyMint: currency_mint,
-        currencyVault: currency_vault,
         makerVault: maker_vault,
         devVault: dev_vault,
         funder: provider.wallet.publicKey,
@@ -117,7 +110,6 @@ describe("ticketbox", () => {
     assert(config_data.ticketTokenMint.equals(ticket_token_mint));
     assert(config_data.ticketTokenVault.equals(ticket_token_vault));
     assert(config_data.currencyMint.equals(currency_mint));
-    assert(config_data.currencyVault.equals(currency_vault));
     assert(config_data.makerVault.equals(maker_vault));
     assert(config_data.devVault.equals(dev_vault));
     assert(config_data.ticketPrice.eq(ticket_price));
@@ -455,20 +447,24 @@ describe("ticketbox", () => {
 
   it("Ticket token should be bought correctly!", async () => {
     const currency_balancefrom_before = (await connection.getTokenAccountBalance(currency_user_vault)).value.amount;
-    const currency_balanceto_before = (await connection.getTokenAccountBalance(currency_vault)).value.amount;
+    const currency_balancemaker_before = (await connection.getTokenAccountBalance(maker2_vault)).value.amount;
+    const currency_balancedev_before = (await connection.getTokenAccountBalance(dev2_vault)).value.amount;
     const ticket_balancefrom_before = (await connection.getTokenAccountBalance(ticket_token_vault)).value.amount;
     const ticket_balanceto_before = (await connection.getTokenAccountBalance(ticket_token_user_vault)).value.amount;
 
     const config_data = await program.account.ticketboxConfig.fetch(config.publicKey);
     const amount = tokens(1000, 9);
     const total_currency = amount.div(new anchor.BN(1000000)).mul(config_data.ticketPrice);
+    const maker_amount = total_currency.div(new anchor.BN(10000)).mul(new anchor.BN(config_data.makerPercent));
+    const dev_amount = total_currency.sub(maker_amount);
     await program.methods
       .buyTicket(amount)
       .accounts({
         config: config.publicKey,
         transferAuthority: transfer_authority,
-        currencyVault: currency_vault,
         currencyUserVault: currency_user_vault,
+        makerVault: maker2_vault,
+        devVault: dev2_vault,
         ticketTokenVault: ticket_token_vault,
         ticketTokenUserVault: ticket_token_user_vault,
         funder: provider.wallet.publicKey,
@@ -476,11 +472,13 @@ describe("ticketbox", () => {
       })
       .signers([]).rpc();
     const currency_balancefrom_after = (await connection.getTokenAccountBalance(currency_user_vault)).value.amount;
-    const currency_balanceto_after = (await connection.getTokenAccountBalance(currency_vault)).value.amount;
+    const currency_balancemaker_after = (await connection.getTokenAccountBalance(maker2_vault)).value.amount;
+    const currency_balancedev_after = (await connection.getTokenAccountBalance(dev2_vault)).value.amount;
     const ticket_balancefrom_after = (await connection.getTokenAccountBalance(ticket_token_vault)).value.amount;
     const ticket_balanceto_after = (await connection.getTokenAccountBalance(ticket_token_user_vault)).value.amount;
     assert(currency_balancefrom_after == (new anchor.BN(currency_balancefrom_before)).sub(total_currency).toString());
-    assert(currency_balanceto_after == (new anchor.BN(currency_balanceto_before)).add(total_currency).toString());
+    assert(currency_balancemaker_after == (new anchor.BN(currency_balancemaker_before)).add(maker_amount).toString());
+    assert(currency_balancedev_after == (new anchor.BN(currency_balancedev_before)).add(dev_amount).toString());
     assert(ticket_balancefrom_after == (new anchor.BN(ticket_balancefrom_before)).sub(amount).toString());
     assert(ticket_balanceto_after == (new anchor.BN(ticket_balanceto_before)).add(amount).toString());
   });

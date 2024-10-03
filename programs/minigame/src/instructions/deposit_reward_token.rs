@@ -1,15 +1,15 @@
 use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
-use game_config::GameConfig;
+use pool::Pool;
 
 #[derive(Accounts)]
 pub struct DepositRewardToken<'info> {
-    pub config: Box<Account<'info, GameConfig>>,
+    pub pool: Account<'info, Pool>,
 
-    #[account(mut, constraint = reward_token_vault.key() == config.reward_token_vault)]
+    #[account(mut, constraint = reward_token_vault.key() == pool.reward_token_vault)]
     pub reward_token_vault: Box<Account<'info, TokenAccount>>,
-    #[account(mut, constraint = reward_token_from_vault.mint == config.reward_token_mint)]
+    #[account(mut, constraint = reward_token_from_vault.mint == pool.reward_token_mint)]
     pub reward_token_from_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
@@ -19,7 +19,7 @@ pub struct DepositRewardToken<'info> {
 }
 
 pub fn handler(ctx: Context<DepositRewardToken>, amount: u64) -> Result<()> {
-    ctx.accounts.config.transfer_tokens_from_user(
+    ctx.accounts.pool.transfer_tokens_from_user(
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.reward_token_from_vault.to_account_info(),
         ctx.accounts.reward_token_vault.to_account_info(),
@@ -28,9 +28,9 @@ pub fn handler(ctx: Context<DepositRewardToken>, amount: u64) -> Result<()> {
     )?;
 
     emit!(DepositRewardTokenEvent {
-        header: ConfigEventHeader {
+        header: PoolEventHeader {
             signer: Some(ctx.accounts.funder.key()),
-            config: ctx.accounts.config.key(),
+            pool: ctx.accounts.pool.key(),
         },
         funder: ctx.accounts.funder.key(),
         amount: amount,

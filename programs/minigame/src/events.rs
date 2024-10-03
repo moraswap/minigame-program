@@ -7,9 +7,16 @@ pub struct ConfigEventHeader {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
+pub struct PoolEventHeader {
+    pub signer: Option<Pubkey>,
+    pub pool: Pubkey,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct MatchEventHeader {
     pub signer: Option<Pubkey>,
     pub config: Pubkey,
+    pub pool: Pubkey,
     pub playmatch: Pubkey,
 }
 
@@ -20,16 +27,6 @@ pub struct InitializeConfigEvent {
     pub operator: Pubkey,
     pub ticket_token_mint: Pubkey,
     pub ticket_token_vault: Pubkey,
-    pub ticket_token_amount: u64,
-    pub fee_rate: u16,
-    pub locked_token_mint: Pubkey,
-    pub locked_token_vault: Pubkey,
-    pub locked_token_amount: u64,
-    pub lock_time: u64,
-    pub reward_token_mint: Pubkey,
-    pub reward_token_vault: Pubkey,
-    pub reward_token_amount: u64,
-    pub match_time: u64,
 }
 
 #[event]
@@ -47,67 +44,82 @@ pub struct UpdateOperatorEvent {
 }
 
 #[event]
+pub struct AddPoolEvent {
+    pub header: PoolEventHeader,
+    pub ticket_token_amount: u64,
+    pub fee_rate: u16,
+    pub locked_token_mint: Pubkey,
+    pub locked_token_vault: Pubkey,
+    pub locked_token_amount: u64,
+    pub lock_time: u64,
+    pub reward_token_mint: Pubkey,
+    pub reward_token_vault: Pubkey,
+    pub reward_token_amount: u64,
+    pub match_time: u64,
+}
+
+#[event]
 pub struct UpdateFeeRateEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub old_fee_rate: u16,
     pub new_fee_rate: u16,
 }
 
 #[event]
 pub struct UpdateLockTimeEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub old_lock_time: u64,
     pub new_lock_time: u64,
 }
 
 #[event]
 pub struct UpdateMatchTimeEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub old_match_time: u64,
     pub new_match_time: u64,
 }
 
 #[event]
 pub struct UpdateTicketTokenAmountEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub old_ticket_token_amount: u64,
     pub new_ticket_token_amount: u64,
 }
 
 #[event]
 pub struct UpdateLockedTokenAmountEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub old_locked_token_amount: u64,
     pub new_locked_token_amount: u64,
 }
 
 #[event]
 pub struct UpdateRewardTokenAmountEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub old_reward_token_amount: u64,
     pub new_reward_token_amount: u64,
 }
 
 #[event]
 pub struct PauseEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
 }
 
 #[event]
 pub struct ResumeEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
 }
 
 #[event]
 pub struct DepositRewardTokenEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub funder: Pubkey,
     pub amount: u64,
 }
 
 #[event]
 pub struct WithdrawRewardTokenEvent {
-    pub header: ConfigEventHeader,
+    pub header: PoolEventHeader,
     pub reward_token_to_vault: Pubkey,
     pub amount: u64,
 }

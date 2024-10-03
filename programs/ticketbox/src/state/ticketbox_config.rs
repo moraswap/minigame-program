@@ -11,7 +11,6 @@ pub struct TicketboxConfig {
     pub ticket_token_mint: Pubkey,
     pub ticket_token_vault: Pubkey,
     pub currency_mint: Pubkey,
-    pub currency_vault: Pubkey,
     pub ticket_price: u64,
     pub maker_vault: Pubkey,
     pub maker_percent: u16,
@@ -30,7 +29,6 @@ impl TicketboxConfig {
         ticket_token_mint: Pubkey,
         ticket_token_vault: Pubkey,
         currency_mint: Pubkey,
-        currency_vault: Pubkey,
         ticket_price: u64,
         maker_vault: Pubkey,
         maker_percent: u16,
@@ -40,7 +38,7 @@ impl TicketboxConfig {
     ) -> Result<()> {
         self.update_authority(authority);
         self.update_ticket_token(ticket_token_mint, ticket_token_vault);
-        self.update_currency(currency_mint, currency_vault);
+        self.update_currency(currency_mint);
         self.update_ticket_price(ticket_price)?;
         self.update_maker_vault(maker_vault);
         self.update_dev_vault(dev_vault);
@@ -59,9 +57,8 @@ impl TicketboxConfig {
         self.ticket_token_vault = ticket_token_vault;
     }
 
-    pub fn update_currency(&mut self, currency_mint: Pubkey, currency_vault: Pubkey) {
+    pub fn update_currency(&mut self, currency_mint: Pubkey) {
         self.currency_mint = currency_mint;
-        self.currency_vault = currency_vault;
     }
 
     pub fn update_ticket_price(&mut self, ticket_price: u64) -> Result<()> {

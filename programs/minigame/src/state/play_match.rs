@@ -1,5 +1,6 @@
 use crate::errors::ErrorCode;
 use crate::state::game_config::GameConfig;
+use crate::state::pool::Pool;
 use anchor_lang::{prelude::*, solana_program};
 use solana_program::clock::Clock;
 
@@ -7,6 +8,7 @@ use solana_program::clock::Clock;
 #[derive(Default, Debug)]
 pub struct PlayMatch {
     pub config: Pubkey,
+    pub pool: Pubkey,
 
     pub match_mint: Pubkey,
     pub user: Pubkey,
@@ -29,31 +31,33 @@ impl PlayMatch {
     pub fn initialize(
         &mut self,
         config: &Account<GameConfig>,
+        pool: &Account<Pool>,
         match_mint: Pubkey,
         user: Pubkey,
     ) -> Result<()> {
-        if config.is_pause {
+        if pool.is_pause {
             return Err(ErrorCode::Paused.into());
         }
 
         self.config = config.key();
+        self.pool = pool.key();
         self.match_mint = match_mint;
         self.user = user;
         self.ticket_token_mint = config.ticket_token_mint;
-        self.ticket_token_amount = config.ticket_token_amount;
-        self.locked_token_mint = config.locked_token_mint;
-        self.locked_token_amount = config.locked_token_amount;
-        self.reward_token_mint = config.reward_token_mint;
-        self.reward_token_amount = config.reward_token_amount;
+        self.ticket_token_amount = pool.ticket_token_amount;
+        self.locked_token_mint = pool.locked_token_mint;
+        self.locked_token_amount = pool.locked_token_amount;
+        self.reward_token_mint = pool.reward_token_mint;
+        self.reward_token_amount = pool.reward_token_amount;
 
         let clock = Clock::get()?;
         let now = clock.unix_timestamp as u64;
-        self.end_time = now + config.match_time;
+        self.end_time = now + pool.match_time;
 
         Ok(())
     }
 
-    pub fn fulfill(&mut self, config: &Account<GameConfig>, is_win: bool) -> Result<()> {
+    pub fn fulfill(&mut self, pool: &Account<Pool>, is_win: bool) -> Result<()> {
         let clock = Clock::get()?;
         let now = clock.unix_timestamp as u64;
         if now < self.end_time {
@@ -64,7 +68,7 @@ impl PlayMatch {
             self.is_win = true;
         } else {
             self.is_win = false;
-            self.unlock_time = now + config.lock_time;
+            self.unlock_time = now + pool.lock_time;
         }
 
         self.is_fulfilled = true;

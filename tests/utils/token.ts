@@ -174,6 +174,24 @@ export async function setAuthority(
     return provider.sendAndConfirm(tx, [authority], { commitment: "confirmed" });
 }
 
+export async function transferSOL(
+    provider: AnchorProvider,
+    source: web3.PublicKey,
+    destination: web3.PublicKey,
+    amount: number | BN
+) {
+    const amountVal = amount instanceof BN ? BigInt(amount.toString()) : amount;
+    const tx = new web3.Transaction();
+    tx.add(
+        web3.SystemProgram.transfer({
+            fromPubkey: source,
+            toPubkey: destination,
+            lamports: amountVal,
+        })
+    );
+    return provider.sendAndConfirm(tx, [], { commitment: "confirmed" });
+}
+
 export async function transferToken(
     provider: AnchorProvider,
     source: web3.PublicKey,

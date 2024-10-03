@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("2F33SPVaVDnw845AkFHmjP3GtyjkdfBm9cRnwP3EqVi6");
+declare_id!("DGW6JwpJPb4LLoqE7wyZDkATkjGBj9CzvY5AkcWqkU9d");
 
 #[doc(hidden)]
 pub mod errors;
@@ -9,9 +9,9 @@ pub mod events;
 #[doc(hidden)]
 pub mod instructions;
 #[doc(hidden)]
-pub mod state;
-#[doc(hidden)]
 pub mod math;
+#[doc(hidden)]
+pub mod state;
 
 use instructions::*;
 
@@ -23,23 +23,11 @@ pub mod minigame {
         ctx: Context<InitializeConfig>,
         authority: Pubkey,
         operator: Pubkey,
-        ticket_token_amount: u64,
-        fee_rate: u16,
-        locked_token_amount: u64,
-        lock_time: u64,
-        reward_token_amount: u64,
-        match_time: u64,
     ) -> Result<()> {
         return instructions::initialize_config::handler(
             ctx,
             authority,
             operator,
-            ticket_token_amount,
-            fee_rate,
-            locked_token_amount,
-            lock_time,
-            reward_token_amount,
-            match_time,
         );
     }
 
@@ -55,7 +43,10 @@ pub mod minigame {
         return instructions::pause_or_resume::handler(ctx);
     }
 
-    pub fn update_ticket_token_amount(ctx: Context<UpdateTicketTokenAmount>, ticket_token_amount: u64) -> Result<()> {
+    pub fn update_ticket_token_amount(
+        ctx: Context<UpdateTicketTokenAmount>,
+        ticket_token_amount: u64,
+    ) -> Result<()> {
         return instructions::update_ticket_token_amount::handler(ctx, ticket_token_amount);
     }
 
@@ -63,7 +54,10 @@ pub mod minigame {
         return instructions::update_fee_rate::handler(ctx, fee_rate);
     }
 
-    pub fn update_locked_token_amount(ctx: Context<UpdateLockedTokenAmount>, locked_token_amount: u64) -> Result<()> {
+    pub fn update_locked_token_amount(
+        ctx: Context<UpdateLockedTokenAmount>,
+        locked_token_amount: u64,
+    ) -> Result<()> {
         return instructions::update_locked_token_amount::handler(ctx, locked_token_amount);
     }
 
@@ -71,7 +65,10 @@ pub mod minigame {
         return instructions::update_lock_time::handler(ctx, lock_time);
     }
 
-    pub fn update_reward_token_amount(ctx: Context<UpdateRewardTokenAmount>, reward_token_amount: u64) -> Result<()> {
+    pub fn update_reward_token_amount(
+        ctx: Context<UpdateRewardTokenAmount>,
+        reward_token_amount: u64,
+    ) -> Result<()> {
         return instructions::update_reward_token_amount::handler(ctx, reward_token_amount);
     }
 
@@ -85,6 +82,26 @@ pub mod minigame {
 
     pub fn withdraw_reward_token(ctx: Context<WithdrawRewardToken>, amount: u64) -> Result<()> {
         return instructions::withdraw_reward_token::handler(ctx, amount);
+    }
+
+    pub fn add_pool(
+        ctx: Context<AddPool>,
+        ticket_token_amount: u64,
+        fee_rate: u16,
+        locked_token_amount: u64,
+        lock_time: u64,
+        reward_token_amount: u64,
+        match_time: u64,
+    ) -> Result<()> {
+        return instructions::add_pool::handler(
+            ctx,
+            ticket_token_amount,
+            fee_rate,
+            locked_token_amount,
+            lock_time,
+            reward_token_amount,
+            match_time,
+        );
     }
 
     pub fn play(ctx: Context<Play>) -> Result<()> {

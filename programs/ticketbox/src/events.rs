@@ -13,7 +13,6 @@ pub struct InitializeConfigEvent {
     pub ticket_token_mint: Pubkey,
     pub ticket_token_vault: Pubkey,
     pub currency_mint: Pubkey,
-    pub currency_vault: Pubkey,
     pub ticket_price: u64,
     pub maker_vault: Pubkey,
     pub maker_percent: u16,

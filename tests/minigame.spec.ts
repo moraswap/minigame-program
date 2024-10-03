@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Minigame } from "../target/types/minigame";
 import { assert, expect } from "chai";
 import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
-import { createAssociatedTokenAccount, createMint, mintToDestination, transferToken } from "./utils/token";
+import { createAssociatedTokenAccount, createMint, mintToDestination, transferSOL, transferToken } from "./utils/token";
 import { PublicKey } from "@solana/web3.js";
 import { sleep, ZERO_BN } from "./utils/const";
 
@@ -40,8 +40,11 @@ describe("minigame", () => {
   let reward_token_user2_vault: PublicKey;
   let transfer_authority;
   let ticket_token_vault;
+  let locked_token_vault_pair;
   let locked_token_vault;
+  let reward_token_vault_pair;
   let reward_token_vault;
+  let pool;
 
   before(async () => {
     ticket_token_mint = await createMint(provider, provider.wallet.publicKey); // SOLO
@@ -70,18 +73,30 @@ describe("minigame", () => {
       program.programId
     );
     console.log("ticket_token_vault", ticket_token_vault.toString());
-    [locked_token_vault,] = anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("locked"), config.publicKey.toBuffer()],
-      program.programId
-    );
+    // [locked_token_vault,] = anchor.web3.PublicKey.findProgramAddressSync(
+    //   [Buffer.from("locked"), config.publicKey.toBuffer()],
+    //   program.programId
+    // );
+    locked_token_vault_pair = anchor.web3.Keypair.generate();
+    locked_token_vault = locked_token_vault_pair.publicKey;
     console.log("locked_token_vault", locked_token_vault.toString());
-    [reward_token_vault,] = anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("reward"), config.publicKey.toBuffer()],
-      program.programId
-    );
+    // [reward_token_vault,] = anchor.web3.PublicKey.findProgramAddressSync(
+    //   [Buffer.from("reward"), config.publicKey.toBuffer()],
+    //   program.programId
+    // );
+    reward_token_vault_pair = anchor.web3.Keypair.generate();
+    reward_token_vault = reward_token_vault_pair.publicKey;
     console.log("reward_token_vault", reward_token_vault.toString());
 
+    // let pool_index_seed = new anchor.BN(0).toBuffer("be", 2);
+    [pool,] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("pool"), config.publicKey.toBuffer(), locked_token_mint.toBuffer(), reward_token_mint.toBuffer()],
+      program.programId
+    );
+    console.log("pool", pool.toString());
+
     // setup initial balance of tokens
+    await transferSOL(provider, provider.wallet.publicKey, dev_wallet.publicKey, tokens("100", 9)); // 100 SOL
     await mintToDestination(provider, ticket_token_mint, ticket_token_user_vault, tokens("1000000", 9)); // 1000000 SOLO
     await mintToDestination(provider, locked_token_mint, locked_token_user_vault, tokens("1000000", 9)); // 1000000 M
     await mintToDestination(provider, reward_token_mint, reward_token_user_vault, tokens("1000000", 9)); // 1000000 M
@@ -94,22 +109,12 @@ describe("minigame", () => {
       .initializeConfig(
         provider.wallet.publicKey,
         provider.wallet.publicKey,
-        ticket_token_amount,
-        fee_rate,
-        locked_token_amount,
-        lock_time,
-        reward_token_amount,
-        match_time,
       )
       .accounts({
         config: config.publicKey,
         transferAuthority: transfer_authority,
         ticketTokenMint: ticket_token_mint,
         ticketTokenVault: ticket_token_vault,
-        lockedTokenMint: locked_token_mint,
-        lockedTokenVault: locked_token_vault,
-        rewardTokenMint: reward_token_mint,
-        rewardTokenVault: reward_token_vault,
         funder: provider.wallet.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -121,16 +126,6 @@ describe("minigame", () => {
     assert(config_data.operator.equals(provider.wallet.publicKey));
     assert(config_data.ticketTokenMint.equals(ticket_token_mint));
     assert(config_data.ticketTokenVault.equals(ticket_token_vault));
-    assert(config_data.ticketTokenAmount.eq(ticket_token_amount));
-    assert(config_data.feeRate == fee_rate);
-    assert(config_data.lockedTokenMint.equals(locked_token_mint));
-    assert(config_data.lockedTokenVault.equals(locked_token_vault));
-    assert(config_data.lockedTokenAmount.eq(locked_token_amount));
-    assert(config_data.lockTime.eq(lock_time));
-    assert(config_data.rewardTokenMint.equals(reward_token_mint));
-    assert(config_data.rewardTokenVault.equals(reward_token_vault));
-    assert(config_data.rewardTokenAmount.eq(reward_token_amount));
-    assert(config_data.matchTime.eq(match_time));
   });
 
   it("Other user cannot update authority!", async () => {
@@ -204,6 +199,80 @@ describe("minigame", () => {
     assert(config_data.operator.equals(dev_wallet.publicKey));
   });
 
+  it("Other user cannot add pool!", async () => {
+    let isFailed = false;
+    try {
+      await program.methods
+        .addPool(
+          ticket_token_amount,
+          fee_rate,
+          locked_token_amount,
+          lock_time,
+          reward_token_amount,
+          match_time,
+        )
+        .accounts({
+          config: config.publicKey,
+          authority: provider.wallet.publicKey,
+          pool: pool,
+          lockedTokenMint: locked_token_mint,
+          lockedTokenVault: locked_token_vault,
+          rewardTokenMint: reward_token_mint,
+          rewardTokenVault: reward_token_vault,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          lockedTokenProgram: TOKEN_PROGRAM_ID,
+          rewardTokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([locked_token_vault_pair, reward_token_vault_pair]).rpc();
+    }
+    catch (_err) {
+      isFailed = true;
+      assert.isTrue(_err instanceof anchor.AnchorError);
+      const e = (_err as anchor.AnchorError).error;
+      assert(e.errorMessage == "An address constraint was violated");
+      assert(e.origin == "authority");
+    }
+
+    assert(isFailed);
+  });
+
+  it("Pool should be added successfully", async () => {
+    await program.methods
+      .addPool(
+        ticket_token_amount,
+        fee_rate, 
+        locked_token_amount,
+        lock_time,
+        reward_token_amount,
+        match_time,
+      )
+      .accounts({
+        config: config.publicKey,
+        authority: dev_wallet.publicKey,
+        pool: pool,
+        lockedTokenMint: locked_token_mint,
+        lockedTokenVault: locked_token_vault,
+        rewardTokenMint: reward_token_mint,
+        rewardTokenVault: reward_token_vault,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        lockedTokenProgram: TOKEN_PROGRAM_ID,
+        rewardTokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .signers([dev_wallet, locked_token_vault_pair, reward_token_vault_pair]).rpc();
+
+    const pool_data = await program.account.pool.fetch(pool);
+    assert(pool_data.ticketTokenAmount.eq(ticket_token_amount));
+    assert(pool_data.feeRate == fee_rate);
+    assert(pool_data.lockedTokenMint.equals(locked_token_mint));
+    assert(pool_data.lockedTokenVault.equals(locked_token_vault));
+    assert(pool_data.lockedTokenAmount.eq(locked_token_amount));
+    assert(pool_data.lockTime.eq(lock_time));
+    assert(pool_data.rewardTokenMint.equals(reward_token_mint));
+    assert(pool_data.rewardTokenVault.equals(reward_token_vault));
+    assert(pool_data.rewardTokenAmount.eq(reward_token_amount));
+    assert(pool_data.matchTime.eq(match_time));
+  });
+
   it("Other user cannot update ticket token amount!", async () => {
     let isFailed = false;
     let new_ticket_token_amount = tokens("2", 9); // 2 SOLO
@@ -212,6 +281,7 @@ describe("minigame", () => {
         .updateTicketTokenAmount(new_ticket_token_amount)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: provider.wallet.publicKey,
         })
         .signers([]).rpc();
@@ -233,12 +303,13 @@ describe("minigame", () => {
       .updateTicketTokenAmount(new_ticket_token_amount)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
       })
       .signers([dev_wallet]).rpc();
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
-    assert(config_data.ticketTokenAmount.eq(new_ticket_token_amount));
+    const pool_data = await program.account.pool.fetch(pool);
+    assert(pool_data.ticketTokenAmount.eq(new_ticket_token_amount));
   });
 
   it("Other user cannot update locked token amount!", async () => {
@@ -249,6 +320,7 @@ describe("minigame", () => {
         .updateLockedTokenAmount(new_locked_token_amount)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: provider.wallet.publicKey,
         })
         .signers([]).rpc();
@@ -270,12 +342,13 @@ describe("minigame", () => {
       .updateLockedTokenAmount(new_locked_token_amount)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
       })
       .signers([dev_wallet]).rpc();
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
-    assert(config_data.lockedTokenAmount.eq(new_locked_token_amount));
+    const pool_data = await program.account.pool.fetch(pool);
+    assert(pool_data.lockedTokenAmount.eq(new_locked_token_amount));
   });
 
   it("Other user cannot update reward token amount!", async () => {
@@ -286,6 +359,7 @@ describe("minigame", () => {
         .updateRewardTokenAmount(new_reward_token_amount)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: provider.wallet.publicKey,
         })
         .signers([]).rpc();
@@ -307,12 +381,13 @@ describe("minigame", () => {
       .updateRewardTokenAmount(new_reward_token_amount)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
       })
       .signers([dev_wallet]).rpc();
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
-    assert(config_data.rewardTokenAmount.eq(new_reward_token_amount));
+    const pool_data = await program.account.pool.fetch(pool);
+    assert(pool_data.rewardTokenAmount.eq(new_reward_token_amount));
   });
 
   it("Other user cannot update lock time!", async () => {
@@ -323,6 +398,7 @@ describe("minigame", () => {
         .updateLockTime(new_lock_time)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: provider.wallet.publicKey,
         })
         .signers([]).rpc();
@@ -344,12 +420,13 @@ describe("minigame", () => {
       .updateLockTime(new_lock_time)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
       })
       .signers([dev_wallet]).rpc();
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
-    assert(config_data.lockTime.eq(new_lock_time));
+    const pool_data = await program.account.pool.fetch(pool);
+    assert(pool_data.lockTime.eq(new_lock_time));
   });
 
   it("Other user cannot update match time!", async () => {
@@ -360,6 +437,7 @@ describe("minigame", () => {
         .updateMatchTime(new_match_time)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: provider.wallet.publicKey,
         })
         .signers([]).rpc();
@@ -381,12 +459,13 @@ describe("minigame", () => {
       .updateMatchTime(new_match_time)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
       })
       .signers([dev_wallet]).rpc();
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
-    assert(config_data.matchTime.eq(new_match_time));
+    const pool_data = await program.account.pool.fetch(pool);
+    assert(pool_data.matchTime.eq(new_match_time));
   });
 
   it("Reward token should be deposited correctly!", async () => {
@@ -396,7 +475,7 @@ describe("minigame", () => {
     await program.methods
       .depositRewardToken(amount)
       .accounts({
-        config: config.publicKey,
+        pool: pool,
         rewardTokenFromVault: reward_token_user2_vault,
         rewardTokenVault: reward_token_vault,
         funder: dev_wallet.publicKey,
@@ -418,8 +497,8 @@ describe("minigame", () => {
         .withdrawRewardToken(amount)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: provider.wallet.publicKey,
-          transferAuthority: transfer_authority,
           rewardTokenToVault: reward_token_user_vault,
           rewardTokenVault: reward_token_vault,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -437,33 +516,6 @@ describe("minigame", () => {
     assert(isFailed);
   });
 
-  it("Should check transferAuthority when withdrawing reward tokens!", async () => {
-    let isFailed = false;
-    const amount = tokens("2000000", 9);
-    try {
-      await program.methods
-        .withdrawRewardToken(amount)
-        .accounts({
-          config: config.publicKey,
-          authority: dev_wallet.publicKey,
-          transferAuthority: reward_token_vault,
-          rewardTokenToVault: reward_token_user_vault,
-          rewardTokenVault: reward_token_vault,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .signers([dev_wallet]).rpc();
-    }
-    catch (_err) {
-      isFailed = true;
-      assert.isTrue(_err instanceof anchor.AnchorError);
-      const e = (_err as anchor.AnchorError).error;
-      assert(e.errorMessage == "A seeds constraint was violated");
-      assert(e.origin == "transfer_authority");
-    }
-
-    assert(isFailed);
-  });
-
   it("Cannot withdraw more than balance!", async () => {
     let isFailed = false;
     const amount = tokens("2000001", 9);
@@ -472,8 +524,8 @@ describe("minigame", () => {
         .withdrawRewardToken(amount)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: dev_wallet.publicKey,
-          transferAuthority: transfer_authority,
           rewardTokenToVault: reward_token_user_vault,
           rewardTokenVault: reward_token_vault,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -496,8 +548,8 @@ describe("minigame", () => {
       .withdrawRewardToken(amount)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
-        transferAuthority: transfer_authority,
         rewardTokenToVault: reward_token_user_vault,
         rewardTokenVault: reward_token_vault,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -516,6 +568,7 @@ describe("minigame", () => {
         .pauseOrResume()
         .accounts({
           config: config.publicKey,
+          pool: pool,
           authority: provider.wallet.publicKey,
         })
         .signers([]).rpc();
@@ -536,12 +589,13 @@ describe("minigame", () => {
       .pauseOrResume()
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
       })
       .signers([dev_wallet]).rpc();
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
-    assert(config_data.isPause);
+    const pool_data = await program.account.pool.fetch(pool);
+    assert(pool_data.isPause);
   });
 
   it("Cannot play while paused!", async () => {
@@ -558,7 +612,7 @@ describe("minigame", () => {
         .play()
         .accounts({
           config: config.publicKey,
-          transferAuthority: transfer_authority,
+          pool: pool,
           playmatch: match_account,
           matchMint: match_mint,
           ticketTokenVault: ticket_token_vault,
@@ -585,6 +639,7 @@ describe("minigame", () => {
       .pauseOrResume()
       .accounts({
         config: config.publicKey,
+        pool: pool,
         authority: dev_wallet.publicKey,
       })
       .signers([dev_wallet]).rpc();
@@ -594,7 +649,7 @@ describe("minigame", () => {
     const locked_balancefrom_before = (await connection.getTokenAccountBalance(locked_token_user_vault)).value.amount;
     const locked_balanceto_before = (await connection.getTokenAccountBalance(locked_token_vault)).value.amount;
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
+    const pool_config = await program.account.pool.fetch(pool);
     const matchs_before = await program.account.playMatch.all();
     const match_mint_keypair = anchor.web3.Keypair.generate();
     const match_mint = match_mint_keypair.publicKey;
@@ -607,7 +662,7 @@ describe("minigame", () => {
       .play()
       .accounts({
         config: config.publicKey,
-        transferAuthority: transfer_authority,
+        pool: pool,
         playmatch: match_account,
         matchMint: match_mint,
         ticketTokenVault: ticket_token_vault,
@@ -625,10 +680,10 @@ describe("minigame", () => {
     const ticket_balanceto_after = (await connection.getTokenAccountBalance(ticket_token_vault)).value.amount;
     const locked_balancefrom_after = (await connection.getTokenAccountBalance(locked_token_user_vault)).value.amount;
     const locked_balanceto_after = (await connection.getTokenAccountBalance(locked_token_vault)).value.amount;
-    assert(ticket_balancefrom_after == (new anchor.BN(ticket_balancefrom_before)).sub(config_data.ticketTokenAmount).toString());
-    assert(ticket_balanceto_after == (new anchor.BN(ticket_balanceto_before)).add(config_data.ticketTokenAmount).toString());
-    assert(locked_balancefrom_after == (new anchor.BN(locked_balancefrom_before)).sub(config_data.lockedTokenAmount).toString());
-    assert(locked_balanceto_after == (new anchor.BN(locked_balanceto_before)).add(config_data.lockedTokenAmount).toString());
+    assert(ticket_balancefrom_after == (new anchor.BN(ticket_balancefrom_before)).sub(pool_config.ticketTokenAmount).toString());
+    assert(ticket_balanceto_after == (new anchor.BN(ticket_balanceto_before)).add(pool_config.ticketTokenAmount).toString());
+    assert(locked_balancefrom_after == (new anchor.BN(locked_balancefrom_before)).sub(pool_config.lockedTokenAmount).toString());
+    assert(locked_balanceto_after == (new anchor.BN(locked_balanceto_before)).add(pool_config.lockedTokenAmount).toString());
   });
 
   it("Should play more correctly!", async () => {
@@ -637,7 +692,7 @@ describe("minigame", () => {
     const locked_balancefrom_before = (await connection.getTokenAccountBalance(locked_token_user_vault)).value.amount;
     const locked_balanceto_before = (await connection.getTokenAccountBalance(locked_token_vault)).value.amount;
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
+    const pool_config = await program.account.pool.fetch(pool);
     const matchs_before = await program.account.playMatch.all();
     const match_mint_keypair = anchor.web3.Keypair.generate();
     const match_mint = match_mint_keypair.publicKey;
@@ -650,7 +705,7 @@ describe("minigame", () => {
       .play()
       .accounts({
         config: config.publicKey,
-        transferAuthority: transfer_authority,
+        pool: pool,
         playmatch: match_account,
         matchMint: match_mint,
         ticketTokenVault: ticket_token_vault,
@@ -668,10 +723,10 @@ describe("minigame", () => {
     const ticket_balanceto_after = (await connection.getTokenAccountBalance(ticket_token_vault)).value.amount;
     const locked_balancefrom_after = (await connection.getTokenAccountBalance(locked_token_user_vault)).value.amount;
     const locked_balanceto_after = (await connection.getTokenAccountBalance(locked_token_vault)).value.amount;
-    assert(ticket_balancefrom_after == (new anchor.BN(ticket_balancefrom_before)).sub(config_data.ticketTokenAmount).toString());
-    assert(ticket_balanceto_after == (new anchor.BN(ticket_balanceto_before)).add(config_data.ticketTokenAmount).toString());
-    assert(locked_balancefrom_after == (new anchor.BN(locked_balancefrom_before)).sub(config_data.lockedTokenAmount).toString());
-    assert(locked_balanceto_after == (new anchor.BN(locked_balanceto_before)).add(config_data.lockedTokenAmount).toString());
+    assert(ticket_balancefrom_after == (new anchor.BN(ticket_balancefrom_before)).sub(pool_config.ticketTokenAmount).toString());
+    assert(ticket_balanceto_after == (new anchor.BN(ticket_balanceto_before)).add(pool_config.ticketTokenAmount).toString());
+    assert(locked_balancefrom_after == (new anchor.BN(locked_balancefrom_before)).sub(pool_config.lockedTokenAmount).toString());
+    assert(locked_balanceto_after == (new anchor.BN(locked_balanceto_before)).add(pool_config.lockedTokenAmount).toString());
   });
 
   it("Other user cannot fulfill!", async () => {
@@ -683,6 +738,7 @@ describe("minigame", () => {
         .fulfill(true)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: provider.wallet.publicKey,
           playmatch: match.publicKey,
           transferAuthority: transfer_authority,
@@ -717,6 +773,7 @@ describe("minigame", () => {
         .fulfill(true)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: dev_wallet.publicKey,
           playmatch: match.publicKey,
           transferAuthority: transfer_authority,
@@ -756,6 +813,7 @@ describe("minigame", () => {
       .fulfill(true)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         operator: dev_wallet.publicKey,
         playmatch: match.publicKey,
         transferAuthority: transfer_authority,
@@ -796,6 +854,7 @@ describe("minigame", () => {
         .fulfill(true)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: dev_wallet.publicKey,
           playmatch: match.publicKey,
           transferAuthority: transfer_authority,
@@ -827,15 +886,16 @@ describe("minigame", () => {
     const reward_balancefrom_before = (await connection.getTokenAccountBalance(reward_token_vault)).value.amount;
     const locked_balanceto_before = (await connection.getTokenAccountBalance(locked_token_user_vault)).value.amount;
 
-    const config_data = await program.account.gameConfig.fetch(config.publicKey);
+    const pool_config = await program.account.pool.fetch(pool);
     const matchs = await program.account.playMatch.all();
     const match = matchs[1];
     const now = Math.floor(Date.now() / 1000);
-    const expected_unlock_time = config_data.lockTime.add(new anchor.BN(now));
+    const expected_unlock_time = pool_config.lockTime.add(new anchor.BN(now));
     await program.methods
       .fulfill(false)
       .accounts({
         config: config.publicKey,
+        pool: pool,
         operator: dev_wallet.publicKey,
         playmatch: match.publicKey,
         transferAuthority: transfer_authority,
@@ -854,7 +914,7 @@ describe("minigame", () => {
     const match_after = matchs_after[1];
     assert(match_after.account.unlockTime.sub(expected_unlock_time).abs().lte(new anchor.BN(1))); // |unlock_time - expected_unlock_time| <= 1
 
-    const fee = match.account.ticketTokenAmount.mul(new anchor.BN(config_data.feeRate)).div(new anchor.BN(10000));
+    const fee = match.account.ticketTokenAmount.mul(new anchor.BN(pool_config.feeRate)).div(new anchor.BN(10000));
     const return_amount = match.account.ticketTokenAmount.sub(fee);
 
     const ticket_balancefrom_after = (await connection.getTokenAccountBalance(ticket_token_vault)).value.amount;
@@ -879,6 +939,7 @@ describe("minigame", () => {
         .fulfill(true)
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: dev_wallet.publicKey,
           playmatch: match.publicKey,
           transferAuthority: transfer_authority,
@@ -912,9 +973,9 @@ describe("minigame", () => {
         .unlock()
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: provider.wallet.publicKey,
           playmatch: match.publicKey,
-          transferAuthority: transfer_authority,
           lockedTokenVault: locked_token_vault,
           lockedTokenUserVault: locked_token_user_vault,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -941,9 +1002,9 @@ describe("minigame", () => {
         .unlock()
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: dev_wallet.publicKey,
           playmatch: match.publicKey,
-          transferAuthority: transfer_authority,
           lockedTokenVault: locked_token_vault,
           lockedTokenUserVault: locked_token_user_vault,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -969,9 +1030,9 @@ describe("minigame", () => {
         .unlock()
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: dev_wallet.publicKey,
           playmatch: match.publicKey,
-          transferAuthority: transfer_authority,
           lockedTokenVault: locked_token_vault,
           lockedTokenUserVault: locked_token_user_vault,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -1003,9 +1064,9 @@ describe("minigame", () => {
       .unlock()
       .accounts({
         config: config.publicKey,
+        pool: pool,
         operator: dev_wallet.publicKey,
         playmatch: match.publicKey,
-        transferAuthority: transfer_authority,
         lockedTokenVault: locked_token_vault,
         lockedTokenUserVault: locked_token_user_vault,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -1038,9 +1099,9 @@ describe("minigame", () => {
         .unlock()
         .accounts({
           config: config.publicKey,
+          pool: pool,
           operator: dev_wallet.publicKey,
           playmatch: match.publicKey,
-          transferAuthority: transfer_authority,
           lockedTokenVault: locked_token_vault,
           lockedTokenUserVault: locked_token_user_vault,
           tokenProgram: TOKEN_PROGRAM_ID,

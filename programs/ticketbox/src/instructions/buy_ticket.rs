@@ -5,7 +5,7 @@ use ticketbox_config::TicketboxConfig;
 
 #[derive(Accounts)]
 pub struct BuyTicket<'info> {
-    pub config: Box<Account<'info, TicketboxConfig>>,
+    pub config: Account<'info, TicketboxConfig>,
 
     /// CHECK: empty PDA, authority for token accounts
     #[account(seeds = [b"transfer_authority"], bump = config.transfer_authority_bump)]
@@ -18,8 +18,10 @@ pub struct BuyTicket<'info> {
 
     #[account(mut, constraint = ticket_token_vault.key() == config.ticket_token_vault)]
     pub ticket_token_vault: Box<Account<'info, TokenAccount>>,
-    #[account(mut, constraint = currency_vault.key() == config.currency_vault)]
-    pub currency_vault: Box<Account<'info, TokenAccount>>,
+    #[account(mut, constraint = maker_vault.key() == config.maker_vault)]
+    pub maker_vault: Box<Account<'info, TokenAccount>>,
+    #[account(mut, constraint = dev_vault.key() == config.dev_vault)]
+    pub dev_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
     pub funder: Signer<'info>,
@@ -32,14 +34,29 @@ pub fn handler(ctx: Context<BuyTicket>, amount: u64) -> Result<u64> {
     let config = &mut ctx.accounts.config;
 
     let total_currency = safe_mul(safe_div(amount, 1000000)?, config.ticket_price)?;
-    if total_currency > 0 {
-        msg!("Transfer currency from user");
+    let maker_amount = safe_mul(
+        safe_div(total_currency, 10000)?,
+        config.maker_percent as u64,
+    )?;
+    let dev_amount = safe_sub(total_currency, maker_amount)?;
+    if maker_amount > 0 {
+        msg!("Transfer currency from user to maker vault");
         ctx.accounts.config.transfer_tokens_from_user(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.currency_user_vault.to_account_info(),
-            ctx.accounts.currency_vault.to_account_info(),
+            ctx.accounts.maker_vault.to_account_info(),
             ctx.accounts.funder.to_account_info(),
-            total_currency,
+            maker_amount,
+        )?;
+    }
+    if dev_amount > 0 {
+        msg!("Transfer currency from user to dev vault");
+        ctx.accounts.config.transfer_tokens_from_user(
+            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.currency_user_vault.to_account_info(),
+            ctx.accounts.dev_vault.to_account_info(),
+            ctx.accounts.funder.to_account_info(),
+            dev_amount,
         )?;
     }
     if amount > 0 {

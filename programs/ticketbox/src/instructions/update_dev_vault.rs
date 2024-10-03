@@ -6,7 +6,7 @@ use ticketbox_config::TicketboxConfig;
 #[derive(Accounts)]
 pub struct UpdateDevVault<'info> {
     #[account(mut)]
-    pub config: Box<Account<'info, TicketboxConfig>>,
+    pub config: Account<'info, TicketboxConfig>,
 
     #[account(address = config.authority)]
     pub authority: Signer<'info>,

@@ -1,33 +1,35 @@
 use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use game_config::GameConfig;
+use pool::Pool;
 
 #[derive(Accounts)]
 pub struct PauseOrResume<'info> {
-    #[account(mut)]
-    pub config: Box<Account<'info, GameConfig>>,
+    pub config: Account<'info, GameConfig>,
+    #[account(mut, has_one = config)]
+    pub pool: Account<'info, Pool>,
 
     #[account(address = config.authority)]
     pub authority: Signer<'info>,
 }
 
 pub fn handler(ctx: Context<PauseOrResume>) -> Result<()> {
-    let is_pause = ctx.accounts.config.is_pause;
+    let is_pause = ctx.accounts.pool.is_pause;
 
-    ctx.accounts.config.pause_or_resume();
+    ctx.accounts.pool.pause_or_resume();
 
     if is_pause {
         emit!(ResumeEvent {
-            header: ConfigEventHeader {
+            header: PoolEventHeader {
                 signer: Some(ctx.accounts.authority.key()),
-                config: ctx.accounts.config.key(),
+                pool: ctx.accounts.pool.key(),
             },
         });
     } else {
         emit!(PauseEvent {
-            header: ConfigEventHeader {
+            header: PoolEventHeader {
                 signer: Some(ctx.accounts.authority.key()),
-                config: ctx.accounts.config.key(),
+                pool: ctx.accounts.pool.key(),
             },
         });
     }

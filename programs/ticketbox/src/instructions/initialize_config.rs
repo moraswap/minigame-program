@@ -18,8 +18,8 @@ pub struct InitializeConfig<'info> {
     )]
     pub transfer_authority: AccountInfo<'info>,
 
-    pub ticket_token_mint: Box<Account<'info, Mint>>,
-    pub currency_mint: Box<Account<'info, Mint>>,
+    pub ticket_token_mint: Account<'info, Mint>,
+    pub currency_mint: Account<'info, Mint>,
 
     #[account(
         init,
@@ -29,14 +29,6 @@ pub struct InitializeConfig<'info> {
         token::mint = ticket_token_mint,
         token::authority = transfer_authority)]
     pub ticket_token_vault: Box<Account<'info, TokenAccount>>,
-    #[account(
-        init,
-        payer = funder,
-        seeds=[b"currency", config.key().as_ref()], 
-        bump, 
-        token::mint = currency_mint,
-        token::authority = transfer_authority)]
-    pub currency_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(mut, constraint = maker_vault.mint == currency_mint.key())]
     pub maker_vault: Box<Account<'info, TokenAccount>>,
@@ -62,7 +54,6 @@ pub fn handler(
     let currency_mint = ctx.accounts.currency_mint.key();
 
     let ticket_token_vault = ctx.accounts.ticket_token_vault.key();
-    let currency_vault = ctx.accounts.currency_vault.key();
     let maker_vault = ctx.accounts.maker_vault.key();
     let dev_vault = ctx.accounts.dev_vault.key();
 
@@ -73,7 +64,6 @@ pub fn handler(
         ticket_token_mint,
         ticket_token_vault,
         currency_mint,
-        currency_vault,
         ticket_price,
         maker_vault,
         maker_percent,
@@ -91,7 +81,6 @@ pub fn handler(
         ticket_token_mint: ticket_token_mint,
         ticket_token_vault: ticket_token_vault,
         currency_mint: currency_mint,
-        currency_vault: currency_vault,
         ticket_price: ticket_price,
         maker_vault: maker_vault,
         maker_percent: maker_percent,

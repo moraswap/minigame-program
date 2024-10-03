@@ -5,7 +5,7 @@ use game_config::GameConfig;
 #[derive(Accounts)]
 pub struct UpdateOperator<'info> {
     #[account(mut)]
-    pub config: Box<Account<'info, GameConfig>>,
+    pub config: Account<'info, GameConfig>,
 
     #[account(address = config.authority)]
     pub authority: Signer<'info>,
