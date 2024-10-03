@@ -1,10 +1,10 @@
 [features]
 seeds = false
 [programs.localnet]
-minigame = "DGW6JwpJPb4LLoqE7wyZDkATkjGBj9CzvY5AkcWqkU9d"
+minigame = "C6EVzNJr8oNJUW3fY3qxuh9MGgdGoSUdPk7RnbRXvxmQ"
 ticketbox = "A2yL9vgkAFhXy1j8kQJJ4A9axJ3EsNt129LVpsM1KruH"
 [programs.devnet]
-minigame = "DGW6JwpJPb4LLoqE7wyZDkATkjGBj9CzvY5AkcWqkU9d"
+minigame = "C6EVzNJr8oNJUW3fY3qxuh9MGgdGoSUdPk7RnbRXvxmQ"
 ticketbox = "A2yL9vgkAFhXy1j8kQJJ4A9axJ3EsNt129LVpsM1KruH"
 
 [provider]
