@@ -5,7 +5,7 @@ use game_config::GameConfig;
 
 #[derive(Accounts)]
 pub struct DepositRewardToken<'info> {
-    pub config: Account<'info, GameConfig>,
+    pub config: Box<Account<'info, GameConfig>>,
 
     #[account(mut, constraint = reward_token_vault.key() == config.reward_token_vault)]
     pub reward_token_vault: Box<Account<'info, TokenAccount>>,

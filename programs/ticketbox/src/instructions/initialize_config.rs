@@ -6,7 +6,7 @@ use ticketbox_config::TicketboxConfig;
 #[derive(Accounts)]
 pub struct InitializeConfig<'info> {
     #[account(init, payer = funder, space = TicketboxConfig::LEN)]
-    pub config: Account<'info, TicketboxConfig>,
+    pub config: Box<Account<'info, TicketboxConfig>>,
 
     /// CHECK: empty PDA, will be set as authority for token accounts
     #[account(
@@ -18,8 +18,8 @@ pub struct InitializeConfig<'info> {
     )]
     pub transfer_authority: AccountInfo<'info>,
 
-    pub ticket_token_mint: Account<'info, Mint>,
-    pub currency_mint: Account<'info, Mint>,
+    pub ticket_token_mint: Box<Account<'info, Mint>>,
+    pub currency_mint: Box<Account<'info, Mint>>,
 
     #[account(
         init,

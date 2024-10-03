@@ -7,7 +7,7 @@ use play_match::PlayMatch;
 #[derive(Accounts)]
 pub struct Unlock<'info> {
     #[account(mut)]
-    pub config: Account<'info, GameConfig>,
+    pub config: Box<Account<'info, GameConfig>>,
 
     #[account(address = config.operator)]
     pub operator: Signer<'info>,

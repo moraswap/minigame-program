@@ -5,7 +5,7 @@ use game_config::GameConfig;
 #[derive(Accounts)]
 pub struct UpdateFeeRate<'info> {
     #[account(mut)]
-    pub config: Account<'info, GameConfig>,
+    pub config: Box<Account<'info, GameConfig>>,
 
     #[account(address = config.authority)]
     pub authority: Signer<'info>,

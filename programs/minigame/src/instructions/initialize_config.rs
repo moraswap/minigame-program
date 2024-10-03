@@ -6,7 +6,7 @@ use game_config::GameConfig;
 #[derive(Accounts)]
 pub struct InitializeConfig<'info> {
     #[account(init, payer = funder, space = GameConfig::LEN)]
-    pub config: Account<'info, GameConfig>,
+    pub config: Box<Account<'info, GameConfig>>,
 
     /// CHECK: empty PDA, will be set as authority for token accounts
     #[account(
@@ -18,9 +18,9 @@ pub struct InitializeConfig<'info> {
     )]
     pub transfer_authority: AccountInfo<'info>,
 
-    pub ticket_token_mint: Account<'info, Mint>,
-    pub locked_token_mint: Account<'info, Mint>,
-    pub reward_token_mint: Account<'info, Mint>,
+    pub ticket_token_mint: Box<Account<'info, Mint>>,
+    pub locked_token_mint: Box<Account<'info, Mint>>,
+    pub reward_token_mint: Box<Account<'info, Mint>>,
 
     #[account(
         init,

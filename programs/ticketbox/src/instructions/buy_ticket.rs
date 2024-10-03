@@ -5,7 +5,7 @@ use ticketbox_config::TicketboxConfig;
 
 #[derive(Accounts)]
 pub struct BuyTicket<'info> {
-    pub config: Account<'info, TicketboxConfig>,
+    pub config: Box<Account<'info, TicketboxConfig>>,
 
     /// CHECK: empty PDA, authority for token accounts
     #[account(seeds = [b"transfer_authority"], bump = config.transfer_authority_bump)]

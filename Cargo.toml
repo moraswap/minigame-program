@@ -1,4 +1,5 @@
 [workspace]
+resover = "2"
 members = [
     "programs/*"
 ]

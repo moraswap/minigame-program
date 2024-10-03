@@ -1,11 +1,11 @@
 [features]
 seeds = false
 [programs.localnet]
-minigame = "7bumD7T74PT4oneNgJgcxzuMa7B4cyh5hRyyT8jH4sXa"
-ticketbox = "6nJR2c9Yj5KdH1GZ9nPKsaHhLKhPW83Men4UgkvUK3Hf"
+minigame = "2F33SPVaVDnw845AkFHmjP3GtyjkdfBm9cRnwP3EqVi6"
+ticketbox = "DJUusxKaSq2p7NiWZgQBAKXRDrrhFcR28vTa7bRxYvYN"
 [programs.devnet]
-minigame = "7bumD7T74PT4oneNgJgcxzuMa7B4cyh5hRyyT8jH4sXa"
-ticketbox = "6nJR2c9Yj5KdH1GZ9nPKsaHhLKhPW83Men4UgkvUK3Hf"
+minigame = "2F33SPVaVDnw845AkFHmjP3GtyjkdfBm9cRnwP3EqVi6"
+ticketbox = "DJUusxKaSq2p7NiWZgQBAKXRDrrhFcR28vTa7bRxYvYN"
 
 [registry]
 url = "https://anchor.projectserum.com"

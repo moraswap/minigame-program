@@ -5,7 +5,7 @@ use ticketbox_config::TicketboxConfig;
 
 #[derive(Accounts)]
 pub struct DepositTicketToken<'info> {
-    pub config: Account<'info, TicketboxConfig>,
+    pub config: Box<Account<'info, TicketboxConfig>>,
 
     #[account(mut, constraint = ticket_token_vault.key() == config.ticket_token_vault)]
     pub ticket_token_vault: Box<Account<'info, TokenAccount>>,

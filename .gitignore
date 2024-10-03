@@ -1,7 +1,9 @@
 
 .anchor
 .DS_Store
+.env
 target
+manage
 **/*.rs.bk
 **/node_modules
 test-ledger

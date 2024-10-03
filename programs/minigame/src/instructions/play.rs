@@ -6,7 +6,7 @@ use play_match::PlayMatch;
 
 #[derive(Accounts)]
 pub struct Play<'info> {
-    pub config: Account<'info, GameConfig>,
+    pub config: Box<Account<'info, GameConfig>>,
 
     #[account(
         init,
@@ -22,7 +22,7 @@ pub struct Play<'info> {
         mint::authority = transfer_authority,
         mint::decimals = 0,
     )]
-    pub match_mint: Account<'info, Mint>,
+    pub match_mint: Box<Account<'info, Mint>>,
 
     /// CHECK: empty PDA, authority for token accounts
     #[account(seeds = [b"transfer_authority"], bump = config.transfer_authority_bump)]

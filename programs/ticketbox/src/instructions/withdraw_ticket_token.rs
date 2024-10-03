@@ -5,7 +5,7 @@ use ticketbox_config::TicketboxConfig;
 
 #[derive(Accounts)]
 pub struct WithdrawTicketToken<'info> {
-    pub config: Account<'info, TicketboxConfig>,
+    pub config: Box<Account<'info, TicketboxConfig>>,
 
     #[account(address = config.authority)]
     pub authority: Signer<'info>,

@@ -7,7 +7,7 @@ use play_match::PlayMatch;
 #[derive(Accounts)]
 pub struct Fulfill<'info> {
     #[account(mut)]
-    pub config: Account<'info, GameConfig>,
+    pub config: Box<Account<'info, GameConfig>>,
 
     #[account(address = config.operator)]
     pub operator: Signer<'info>,
@@ -20,7 +20,7 @@ pub struct Fulfill<'info> {
     pub transfer_authority: AccountInfo<'info>,
 
     #[account(mut, constraint = ticket_token_mint.key() == config.ticket_token_mint)]
-    pub ticket_token_mint: Account<'info, Mint>,
+    pub ticket_token_mint: Box<Account<'info, Mint>>,
 
     #[account(mut, constraint = ticket_token_vault.key() == config.ticket_token_vault)]
     pub ticket_token_vault: Box<Account<'info, TokenAccount>>,

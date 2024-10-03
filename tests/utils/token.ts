@@ -1,6 +1,5 @@
 import { AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
-import { TEST_TOKEN_PROGRAM_ID } from "./const";
-import { AuthorityType, createApproveInstruction, createAssociatedTokenAccountInstruction, createBurnInstruction, createInitializeAccount3Instruction, createInitializeMintInstruction, createMintToInstruction, createSetAuthorityInstruction, createTransferInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { AuthorityType, createApproveInstruction, createAssociatedTokenAccountInstruction, createBurnInstruction, createInitializeAccount3Instruction, createInitializeMintInstruction, createMintToInstruction, createSetAuthorityInstruction, createTransferInstruction, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export async function createMint(
     provider: AnchorProvider,
@@ -33,7 +32,7 @@ export async function createMintInstructions(
             newAccountPubkey: mint,
             space: 82,
             lamports: await provider.connection.getMinimumBalanceForRentExemption(82),
-            programId: TEST_TOKEN_PROGRAM_ID,
+            programId: TOKEN_PROGRAM_ID,
         }),
         createInitializeMintInstruction(mint, decimals, authority, null)
     ];
@@ -87,7 +86,7 @@ async function createTokenAccountInstrs(
             newAccountPubkey,
             space: 165,
             lamports,
-            programId: TEST_TOKEN_PROGRAM_ID,
+            programId: TOKEN_PROGRAM_ID,
         }),
         createInitializeAccount3Instruction(newAccountPubkey, mint, owner)
     ];
