@@ -1,3 +1,4 @@
+use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Burn, Transfer};
 
@@ -9,6 +10,10 @@ pub struct GameConfig {
     pub operator: Pubkey,
     pub ticket_token_mint: Pubkey,
     pub ticket_token_vault: Pubkey,
+    pub ticket_token_amount: u64,
+    pub fee_rate: u16,
+    pub lock_time: u64,
+    pub match_time: u64,
 
     pub transfer_authority_bump: u8,
 }
@@ -22,6 +27,10 @@ impl GameConfig {
         operator: Pubkey,
         ticket_token_mint: Pubkey,
         ticket_token_vault: Pubkey,
+        ticket_token_amount: u64,
+        fee_rate: u16,
+        lock_time: u64,
+        match_time: u64,
         transfer_authority_bump: u8,
     ) -> Result<()> {
         self.ticket_token_mint = ticket_token_mint;
@@ -29,6 +38,10 @@ impl GameConfig {
         self.transfer_authority_bump = transfer_authority_bump;
         self.update_authority(authority);
         self.update_operator(operator);
+        self.update_ticket_token_amount(ticket_token_amount);
+        self.update_fee_rate(fee_rate)?;
+        self.update_lock_time(lock_time);
+        self.update_match_time(match_time);
 
         Ok(())
     }
@@ -39,6 +52,28 @@ impl GameConfig {
 
     pub fn update_operator(&mut self, operator: Pubkey) {
         self.operator = operator;
+    }
+
+    pub fn update_ticket_token_amount(&mut self, ticket_token_amount: u64) {
+        self.ticket_token_amount = ticket_token_amount;
+    }
+
+    pub fn update_fee_rate(&mut self, fee_rate: u16) -> Result<()> {
+        if fee_rate > 10000 {
+            return Err(ErrorCode::FeeRateMaxExceeded.into());
+        }
+
+        self.fee_rate = fee_rate;
+
+        Ok(())
+    }
+
+    pub fn update_lock_time(&mut self, lock_time: u64) {
+        self.lock_time = lock_time;
+    }
+
+    pub fn update_match_time(&mut self, match_time: u64) {
+        self.match_time = match_time;
     }
 
     pub fn transfer_tokens<'info>(

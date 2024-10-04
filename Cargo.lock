@@ -2338,16 +2338,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ticketbox"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "solana-program",
- "spl-token",
-]
-
-[[package]]
 name = "tiny-bip39"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

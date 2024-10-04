@@ -49,6 +49,22 @@ export type Minigame = {
         {
           "name": "operator",
           "type": "publicKey"
+        },
+        {
+          "name": "ticketTokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "feeRate",
+          "type": "u16"
+        },
+        {
+          "name": "lockTime",
+          "type": "u64"
+        },
+        {
+          "name": "matchTime",
+          "type": "u64"
         }
       ]
     },
@@ -120,11 +136,6 @@ export type Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -146,11 +157,6 @@ export type Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -198,11 +204,6 @@ export type Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -250,11 +251,6 @@ export type Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -274,6 +270,11 @@ export type Minigame = {
     {
       "name": "depositRewardToken",
       "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "pool",
           "isMut": false,
@@ -317,13 +318,18 @@ export type Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "authority",
           "isMut": false,
           "isSigner": true
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "rewardTokenVault",
@@ -349,11 +355,11 @@ export type Minigame = {
       ]
     },
     {
-      "name": "addPool",
+      "name": "createPool",
       "accounts": [
         {
           "name": "config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -369,6 +375,52 @@ export type Minigame = {
         {
           "name": "pool",
           "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initializePool",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -392,39 +444,18 @@ export type Minigame = {
           "isSigner": false
         },
         {
-          "name": "lockedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rewardTokenProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
       ],
       "args": [
         {
-          "name": "ticketTokenAmount",
-          "type": "u64"
-        },
-        {
-          "name": "feeRate",
-          "type": "u16"
-        },
-        {
           "name": "lockedTokenAmount",
           "type": "u64"
         },
         {
-          "name": "lockTime",
-          "type": "u64"
-        },
-        {
           "name": "rewardTokenAmount",
-          "type": "u64"
-        },
-        {
-          "name": "matchTime",
           "type": "u64"
         }
       ]
@@ -439,7 +470,7 @@ export type Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -500,7 +531,7 @@ export type Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -576,7 +607,7 @@ export type Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -587,6 +618,11 @@ export type Minigame = {
         {
           "name": "playmatch",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -629,6 +665,22 @@ export type Minigame = {
           {
             "name": "ticketTokenVault",
             "type": "publicKey"
+          },
+          {
+            "name": "ticketTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
+          },
+          {
+            "name": "lockTime",
+            "type": "u64"
+          },
+          {
+            "name": "matchTime",
+            "type": "u64"
           },
           {
             "name": "transferAuthorityBump",
@@ -715,25 +767,8 @@ export type Minigame = {
             "type": "publicKey"
           },
           {
-            "name": "bump",
-            "type": {
-              "array": [
-                "u8",
-                1
-              ]
-            }
-          },
-          {
             "name": "isPause",
             "type": "bool"
-          },
-          {
-            "name": "ticketTokenAmount",
-            "type": "u64"
-          },
-          {
-            "name": "feeRate",
-            "type": "u16"
           },
           {
             "name": "lockedTokenMint",
@@ -748,10 +783,6 @@ export type Minigame = {
             "type": "u64"
           },
           {
-            "name": "lockTime",
-            "type": "u64"
-          },
-          {
             "name": "rewardTokenMint",
             "type": "publicKey"
           },
@@ -761,10 +792,6 @@ export type Minigame = {
           },
           {
             "name": "rewardTokenAmount",
-            "type": "u64"
-          },
-          {
-            "name": "matchTime",
             "type": "u64"
           }
         ]
@@ -865,6 +892,26 @@ export type Minigame = {
           "name": "ticketTokenVault",
           "type": "publicKey",
           "index": false
+        },
+        {
+          "name": "ticketTokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "feeRate",
+          "type": "u16",
+          "index": false
+        },
+        {
+          "name": "lockTime",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "matchTime",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -913,7 +960,7 @@ export type Minigame = {
       ]
     },
     {
-      "name": "AddPoolEvent",
+      "name": "CreatePoolEvent",
       "fields": [
         {
           "name": "header",
@@ -923,18 +970,25 @@ export type Minigame = {
           "index": false
         },
         {
-          "name": "ticketTokenAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "feeRate",
-          "type": "u16",
-          "index": false
-        },
-        {
           "name": "lockedTokenMint",
           "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rewardTokenMint",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "InitializePoolEvent",
+      "fields": [
+        {
+          "name": "header",
+          "type": {
+            "defined": "PoolEventHeader"
+          },
           "index": false
         },
         {
@@ -948,27 +1002,12 @@ export type Minigame = {
           "index": false
         },
         {
-          "name": "lockTime",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "rewardTokenMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
           "name": "rewardTokenVault",
           "type": "publicKey",
           "index": false
         },
         {
           "name": "rewardTokenAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "matchTime",
           "type": "u64",
           "index": false
         }
@@ -980,7 +1019,7 @@ export type Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },
@@ -1002,7 +1041,7 @@ export type Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },
@@ -1024,7 +1063,7 @@ export type Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },
@@ -1046,7 +1085,7 @@ export type Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },
@@ -1346,6 +1385,22 @@ export const IDL: Minigame = {
         {
           "name": "operator",
           "type": "publicKey"
+        },
+        {
+          "name": "ticketTokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "feeRate",
+          "type": "u16"
+        },
+        {
+          "name": "lockTime",
+          "type": "u64"
+        },
+        {
+          "name": "matchTime",
+          "type": "u64"
         }
       ]
     },
@@ -1417,11 +1472,6 @@ export const IDL: Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -1443,11 +1493,6 @@ export const IDL: Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -1495,11 +1540,6 @@ export const IDL: Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -1547,11 +1587,6 @@ export const IDL: Minigame = {
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool",
           "isMut": true,
           "isSigner": false
         },
@@ -1571,6 +1606,11 @@ export const IDL: Minigame = {
     {
       "name": "depositRewardToken",
       "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "pool",
           "isMut": false,
@@ -1614,13 +1654,18 @@ export const IDL: Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "authority",
           "isMut": false,
           "isSigner": true
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "rewardTokenVault",
@@ -1646,11 +1691,11 @@ export const IDL: Minigame = {
       ]
     },
     {
-      "name": "addPool",
+      "name": "createPool",
       "accounts": [
         {
           "name": "config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1666,6 +1711,52 @@ export const IDL: Minigame = {
         {
           "name": "pool",
           "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initializePool",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lockedTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1689,39 +1780,18 @@ export const IDL: Minigame = {
           "isSigner": false
         },
         {
-          "name": "lockedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rewardTokenProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
       ],
       "args": [
         {
-          "name": "ticketTokenAmount",
-          "type": "u64"
-        },
-        {
-          "name": "feeRate",
-          "type": "u16"
-        },
-        {
           "name": "lockedTokenAmount",
           "type": "u64"
         },
         {
-          "name": "lockTime",
-          "type": "u64"
-        },
-        {
           "name": "rewardTokenAmount",
-          "type": "u64"
-        },
-        {
-          "name": "matchTime",
           "type": "u64"
         }
       ]
@@ -1736,7 +1806,7 @@ export const IDL: Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1797,7 +1867,7 @@ export const IDL: Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1873,7 +1943,7 @@ export const IDL: Minigame = {
         },
         {
           "name": "pool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1884,6 +1954,11 @@ export const IDL: Minigame = {
         {
           "name": "playmatch",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1926,6 +2001,22 @@ export const IDL: Minigame = {
           {
             "name": "ticketTokenVault",
             "type": "publicKey"
+          },
+          {
+            "name": "ticketTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
+          },
+          {
+            "name": "lockTime",
+            "type": "u64"
+          },
+          {
+            "name": "matchTime",
+            "type": "u64"
           },
           {
             "name": "transferAuthorityBump",
@@ -2012,25 +2103,8 @@ export const IDL: Minigame = {
             "type": "publicKey"
           },
           {
-            "name": "bump",
-            "type": {
-              "array": [
-                "u8",
-                1
-              ]
-            }
-          },
-          {
             "name": "isPause",
             "type": "bool"
-          },
-          {
-            "name": "ticketTokenAmount",
-            "type": "u64"
-          },
-          {
-            "name": "feeRate",
-            "type": "u16"
           },
           {
             "name": "lockedTokenMint",
@@ -2045,10 +2119,6 @@ export const IDL: Minigame = {
             "type": "u64"
           },
           {
-            "name": "lockTime",
-            "type": "u64"
-          },
-          {
             "name": "rewardTokenMint",
             "type": "publicKey"
           },
@@ -2058,10 +2128,6 @@ export const IDL: Minigame = {
           },
           {
             "name": "rewardTokenAmount",
-            "type": "u64"
-          },
-          {
-            "name": "matchTime",
             "type": "u64"
           }
         ]
@@ -2162,6 +2228,26 @@ export const IDL: Minigame = {
           "name": "ticketTokenVault",
           "type": "publicKey",
           "index": false
+        },
+        {
+          "name": "ticketTokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "feeRate",
+          "type": "u16",
+          "index": false
+        },
+        {
+          "name": "lockTime",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "matchTime",
+          "type": "u64",
+          "index": false
         }
       ]
     },
@@ -2210,7 +2296,7 @@ export const IDL: Minigame = {
       ]
     },
     {
-      "name": "AddPoolEvent",
+      "name": "CreatePoolEvent",
       "fields": [
         {
           "name": "header",
@@ -2220,18 +2306,25 @@ export const IDL: Minigame = {
           "index": false
         },
         {
-          "name": "ticketTokenAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "feeRate",
-          "type": "u16",
-          "index": false
-        },
-        {
           "name": "lockedTokenMint",
           "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rewardTokenMint",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "InitializePoolEvent",
+      "fields": [
+        {
+          "name": "header",
+          "type": {
+            "defined": "PoolEventHeader"
+          },
           "index": false
         },
         {
@@ -2245,27 +2338,12 @@ export const IDL: Minigame = {
           "index": false
         },
         {
-          "name": "lockTime",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "rewardTokenMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
           "name": "rewardTokenVault",
           "type": "publicKey",
           "index": false
         },
         {
           "name": "rewardTokenAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "matchTime",
           "type": "u64",
           "index": false
         }
@@ -2277,7 +2355,7 @@ export const IDL: Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },
@@ -2299,7 +2377,7 @@ export const IDL: Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },
@@ -2321,7 +2399,7 @@ export const IDL: Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },
@@ -2343,7 +2421,7 @@ export const IDL: Minigame = {
         {
           "name": "header",
           "type": {
-            "defined": "PoolEventHeader"
+            "defined": "ConfigEventHeader"
           },
           "index": false
         },

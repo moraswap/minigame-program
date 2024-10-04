@@ -1,10 +1,13 @@
 use crate::{events::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
+use game_config::GameConfig;
 use pool::Pool;
 
 #[derive(Accounts)]
 pub struct DepositRewardToken<'info> {
+    pub config: Account<'info, GameConfig>,
+    #[account(has_one = config)]
     pub pool: Account<'info, Pool>,
 
     #[account(mut, constraint = reward_token_vault.key() == pool.reward_token_vault)]
@@ -19,7 +22,9 @@ pub struct DepositRewardToken<'info> {
 }
 
 pub fn handler(ctx: Context<DepositRewardToken>, amount: u64) -> Result<()> {
-    ctx.accounts.pool.transfer_tokens_from_user(
+    let config = &ctx.accounts.config;
+
+    config.transfer_tokens_from_user(
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.reward_token_from_vault.to_account_info(),
         ctx.accounts.reward_token_vault.to_account_info(),

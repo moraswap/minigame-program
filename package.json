@@ -6,7 +6,7 @@
     "build": "anchor build",
     "test": "anchor test",
     "devnet:deploy": "anchor deploy --provider.cluster devnet",
-    "devnet:manage-ticketbox": "yarn run ts-node manage/devnet/ticketbox.ts",
+    "devnet:manage": "yarn run ts-node manage/devnet/index.ts",
     "mainnet:deploy": "anchor deploy --provider.cluster mainnet"
   },
   "dependencies": {

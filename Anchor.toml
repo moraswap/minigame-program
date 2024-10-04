@@ -1,11 +1,9 @@
 [features]
 seeds = false
 [programs.localnet]
-minigame = "C6EVzNJr8oNJUW3fY3qxuh9MGgdGoSUdPk7RnbRXvxmQ"
-ticketbox = "A2yL9vgkAFhXy1j8kQJJ4A9axJ3EsNt129LVpsM1KruH"
+minigame = "5d5KPyxuuRQ3DApdxWSCGTgPxb4XBxbwkHpZZCBtzwgU"
 [programs.devnet]
-minigame = "C6EVzNJr8oNJUW3fY3qxuh9MGgdGoSUdPk7RnbRXvxmQ"
-ticketbox = "A2yL9vgkAFhXy1j8kQJJ4A9axJ3EsNt129LVpsM1KruH"
+minigame = "5d5KPyxuuRQ3DApdxWSCGTgPxb4XBxbwkHpZZCBtzwgU"
 
 [provider]
 cluster = "localnet"

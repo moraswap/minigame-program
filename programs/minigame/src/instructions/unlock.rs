@@ -8,7 +8,7 @@ use pool::Pool;
 #[derive(Accounts)]
 pub struct Unlock<'info> {
     pub config: Account<'info, GameConfig>,
-    #[account(mut, has_one = config)]
+    #[account(has_one = config)]
     pub pool: Account<'info, Pool>,
 
     #[account(address = config.operator)]
@@ -16,6 +16,10 @@ pub struct Unlock<'info> {
 
     #[account(mut, constraint = playmatch.pool == pool.key())]
     pub playmatch: Box<Account<'info, PlayMatch>>,
+
+    /// CHECK: empty PDA, authority for token accounts
+    #[account(seeds = [b"transfer_authority"], bump = config.transfer_authority_bump)]
+    pub transfer_authority: AccountInfo<'info>,
 
     #[account(mut, constraint = locked_token_vault.key() == pool.locked_token_vault)]
     pub locked_token_vault: Box<Account<'info, TokenAccount>>,
@@ -30,19 +34,18 @@ pub struct Unlock<'info> {
 }
 
 pub fn handler(ctx: Context<Unlock>) -> Result<()> {
+    let config = &ctx.accounts.config;
     let playmatch = &mut ctx.accounts.playmatch;
 
     playmatch.unlock()?;
 
     if playmatch.locked_token_amount > 0 {
         msg!("Transfer locked tokens to user");
-        let authority_seeds = ctx.accounts.pool.seeds();
-        ctx.accounts.pool.transfer_tokens(
+        config.transfer_tokens(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.locked_token_vault.to_account_info(),
             ctx.accounts.locked_token_user_vault.to_account_info(),
-            ctx.accounts.pool.to_account_info(),
-            &[&authority_seeds],
+            ctx.accounts.transfer_authority.to_account_info(),
             playmatch.locked_token_amount,
         )?;
     }
@@ -50,7 +53,7 @@ pub fn handler(ctx: Context<Unlock>) -> Result<()> {
     emit!(UnlockEvent {
         header: MatchEventHeader {
             signer: Some(ctx.accounts.operator.key()),
-            config: ctx.accounts.config.key(),
+            config: config.key(),
             pool: ctx.accounts.pool.key(),
             playmatch: ctx.accounts.playmatch.key(),
         },

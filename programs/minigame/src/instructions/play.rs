@@ -8,8 +8,8 @@ use pool::Pool;
 #[derive(Accounts)]
 pub struct Play<'info> {
     pub config: Account<'info, GameConfig>,
-    #[account(mut, has_one = config)]
-    pub pool: Account<'info, Pool>,
+    #[account(has_one = config)]
+    pub pool: Box<Account<'info, Pool>>,
 
     #[account(
         init,
@@ -53,50 +53,52 @@ pub struct Play<'info> {
 }
 
 pub fn handler(ctx: Context<Play>) -> Result<()> {
-    let config = &mut ctx.accounts.config;
-    let pool = &mut ctx.accounts.pool;
+    let config = &ctx.accounts.config;
     let user = ctx.accounts.funder.key();
 
     // receive ticket tokens
-    if pool.ticket_token_amount > 0 {
+    if ctx.accounts.config.ticket_token_amount > 0 {
         msg!("Transfer ticket tokens from user");
         config.transfer_tokens_from_user(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.ticket_token_user_vault.to_account_info(),
             ctx.accounts.ticket_token_vault.to_account_info(),
             ctx.accounts.funder.to_account_info(),
-            pool.ticket_token_amount,
+            ctx.accounts.config.ticket_token_amount,
         )?;
     }
 
     // receive locked tokens
-    if pool.locked_token_amount > 0 {
+    if ctx.accounts.pool.locked_token_amount > 0 {
         msg!("Transfer locked tokens from user");
-        pool.transfer_tokens_from_user(
+        config.transfer_tokens_from_user(
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.locked_token_user_vault.to_account_info(),
             ctx.accounts.locked_token_vault.to_account_info(),
             ctx.accounts.funder.to_account_info(),
-            pool.locked_token_amount,
+            ctx.accounts.pool.locked_token_amount,
         )?;
     }
 
-    ctx.accounts
-        .playmatch
-        .initialize(config, pool, ctx.accounts.match_mint.key(), user)?;
+    ctx.accounts.playmatch.initialize(
+        config,
+        &ctx.accounts.pool,
+        ctx.accounts.match_mint.key(),
+        user,
+    )?;
 
     emit!(PlayEvent {
         header: MatchEventHeader {
             signer: Some(ctx.accounts.funder.key()),
             config: config.key(),
-            pool: pool.key(),
+            pool: ctx.accounts.pool.key(),
             playmatch: ctx.accounts.playmatch.key(),
         },
         funder: ctx.accounts.funder.key(),
         match_mint: ctx.accounts.match_mint.key(),
-        ticket_token_amount: pool.ticket_token_amount,
-        locked_token_amount: pool.locked_token_amount,
-        reward_token_amount: pool.reward_token_amount,
+        ticket_token_amount: ctx.accounts.config.ticket_token_amount,
+        locked_token_amount: ctx.accounts.pool.locked_token_amount,
+        reward_token_amount: ctx.accounts.pool.reward_token_amount,
     });
     Ok(())
 }

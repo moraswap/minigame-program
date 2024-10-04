@@ -44,7 +44,7 @@ impl PlayMatch {
         self.match_mint = match_mint;
         self.user = user;
         self.ticket_token_mint = config.ticket_token_mint;
-        self.ticket_token_amount = pool.ticket_token_amount;
+        self.ticket_token_amount = config.ticket_token_amount;
         self.locked_token_mint = pool.locked_token_mint;
         self.locked_token_amount = pool.locked_token_amount;
         self.reward_token_mint = pool.reward_token_mint;
@@ -52,12 +52,12 @@ impl PlayMatch {
 
         let clock = Clock::get()?;
         let now = clock.unix_timestamp as u64;
-        self.end_time = now + pool.match_time;
+        self.end_time = now + config.match_time;
 
         Ok(())
     }
 
-    pub fn fulfill(&mut self, pool: &Account<Pool>, is_win: bool) -> Result<()> {
+    pub fn fulfill(&mut self, config: &Account<GameConfig>, is_win: bool) -> Result<()> {
         let clock = Clock::get()?;
         let now = clock.unix_timestamp as u64;
         if now < self.end_time {
@@ -68,7 +68,7 @@ impl PlayMatch {
             self.is_win = true;
         } else {
             self.is_win = false;
-            self.unlock_time = now + pool.lock_time;
+            self.unlock_time = now + config.lock_time;
         }
 
         self.is_fulfilled = true;

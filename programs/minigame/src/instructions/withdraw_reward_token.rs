@@ -7,11 +7,15 @@ use pool::Pool;
 #[derive(Accounts)]
 pub struct WithdrawRewardToken<'info> {
     pub config: Account<'info, GameConfig>,
-    #[account(mut, has_one = config)]
+    #[account(has_one = config)]
     pub pool: Account<'info, Pool>,
 
     #[account(address = config.authority)]
     pub authority: Signer<'info>,
+
+    /// CHECK: empty PDA, authority for token accounts
+    #[account(seeds = [b"transfer_authority"], bump = config.transfer_authority_bump)]
+    pub transfer_authority: AccountInfo<'info>,
 
     #[account(mut, constraint = reward_token_vault.key() == pool.reward_token_vault)]
     pub reward_token_vault: Box<Account<'info, TokenAccount>>,
@@ -22,13 +26,13 @@ pub struct WithdrawRewardToken<'info> {
 }
 
 pub fn handler(ctx: Context<WithdrawRewardToken>, amount: u64) -> Result<()> {
-    let authority_seeds = ctx.accounts.pool.seeds();
-    ctx.accounts.pool.transfer_tokens(
+    let config = &ctx.accounts.config;
+
+    config.transfer_tokens(
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.reward_token_vault.to_account_info(),
         ctx.accounts.reward_token_to_vault.to_account_info(),
-        ctx.accounts.pool.to_account_info(),
-        &[&authority_seeds],
+        ctx.accounts.transfer_authority.to_account_info(),
         amount,
     )?;
 

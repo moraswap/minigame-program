@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("C6EVzNJr8oNJUW3fY3qxuh9MGgdGoSUdPk7RnbRXvxmQ");
+declare_id!("5d5KPyxuuRQ3DApdxWSCGTgPxb4XBxbwkHpZZCBtzwgU");
 
 #[doc(hidden)]
 pub mod errors;
@@ -23,11 +23,19 @@ pub mod minigame {
         ctx: Context<InitializeConfig>,
         authority: Pubkey,
         operator: Pubkey,
+        ticket_token_amount: u64,
+        fee_rate: u16,
+        lock_time: u64,
+        match_time: u64,
     ) -> Result<()> {
         return instructions::initialize_config::handler(
             ctx,
             authority,
             operator,
+            ticket_token_amount,
+            fee_rate,
+            lock_time,
+            match_time,
         );
     }
 
@@ -84,23 +92,19 @@ pub mod minigame {
         return instructions::withdraw_reward_token::handler(ctx, amount);
     }
 
-    pub fn add_pool(
-        ctx: Context<AddPool>,
-        ticket_token_amount: u64,
-        fee_rate: u16,
+    pub fn create_pool(ctx: Context<CreatePool>) -> Result<()> {
+        return instructions::create_pool::handler(ctx);
+    }
+
+    pub fn initialize_pool(
+        ctx: Context<InitializePool>,
         locked_token_amount: u64,
-        lock_time: u64,
         reward_token_amount: u64,
-        match_time: u64,
     ) -> Result<()> {
-        return instructions::add_pool::handler(
+        return instructions::initialize_pool::handler(
             ctx,
-            ticket_token_amount,
-            fee_rate,
             locked_token_amount,
-            lock_time,
             reward_token_amount,
-            match_time,
         );
     }
 

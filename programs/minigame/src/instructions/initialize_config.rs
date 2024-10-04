@@ -40,6 +40,10 @@ pub fn handler(
     ctx: Context<InitializeConfig>,
     authority: Pubkey,
     operator: Pubkey,
+    ticket_token_amount: u64,
+    fee_rate: u16,
+    lock_time: u64,
+    match_time: u64,
 ) -> Result<()> {
     let config = &mut ctx.accounts.config;
     let ticket_token_mint = ctx.accounts.ticket_token_mint.key();
@@ -51,6 +55,10 @@ pub fn handler(
         operator,
         ticket_token_mint,
         ticket_token_vault,
+        ticket_token_amount,
+        fee_rate,
+        lock_time,
+        match_time,
         transfer_authority_bump,
     )?;
 
@@ -59,10 +67,14 @@ pub fn handler(
             signer: Some(ctx.accounts.funder.key()),
             config: ctx.accounts.config.key(),
         },
-        authority: authority,
-        operator: operator,
-        ticket_token_mint: ticket_token_mint,
-        ticket_token_vault: ticket_token_vault,
+        authority,
+        operator,
+        ticket_token_mint,
+        ticket_token_vault,
+        ticket_token_amount,
+        fee_rate,
+        lock_time,
+        match_time,
     });
     Ok(())
 }

@@ -8,7 +8,7 @@ use pool::Pool;
 #[derive(Accounts)]
 pub struct Fulfill<'info> {
     pub config: Account<'info, GameConfig>,
-    #[account(mut, has_one = config)]
+    #[account(has_one = config)]
     pub pool: Account<'info, Pool>,
 
     #[account(address = config.operator)]
@@ -54,37 +54,33 @@ pub struct Fulfill<'info> {
 }
 
 pub fn handler(ctx: Context<Fulfill>, is_win: bool) -> Result<()> {
-    let config = &mut ctx.accounts.config;
-    let pool = &mut ctx.accounts.pool;
+    let config = &ctx.accounts.config;
     let playmatch = &mut ctx.accounts.playmatch;
 
     if playmatch.is_fulfilled {
         return Err(ErrorCode::Fulfilled.into());
     }
 
-    playmatch.fulfill(pool, is_win)?;
-    let authority_seeds = pool.seeds();
+    playmatch.fulfill(config, is_win)?;
     if is_win {
         if playmatch.locked_token_amount > 0 {
             msg!("Transfer locked tokens to user");
-            pool.transfer_tokens(
+            config.transfer_tokens(
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.locked_token_vault.to_account_info(),
                 ctx.accounts.locked_token_user_vault.to_account_info(),
-                pool.to_account_info(),
-                &[&authority_seeds],
+                ctx.accounts.transfer_authority.to_account_info(),
                 playmatch.locked_token_amount,
             )?;
         }
 
         if playmatch.reward_token_amount > 0 {
             msg!("Transfer reward tokens to user");
-            pool.transfer_tokens(
+            config.transfer_tokens(
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.reward_token_vault.to_account_info(),
                 ctx.accounts.reward_token_user_vault.to_account_info(),
-                pool.to_account_info(),
-                &[&authority_seeds],
+                ctx.accounts.transfer_authority.to_account_info(),
                 playmatch.reward_token_amount,
             )?;
         }
@@ -101,7 +97,7 @@ pub fn handler(ctx: Context<Fulfill>, is_win: bool) -> Result<()> {
         }
     } else {
         let fee = safe_div(
-            safe_mul(playmatch.ticket_token_amount, pool.fee_rate as u64)?,
+            safe_mul(playmatch.ticket_token_amount, config.fee_rate as u64)?,
             10000,
         )?;
         let return_amount = safe_sub(playmatch.ticket_token_amount, fee)?;
@@ -133,7 +129,7 @@ pub fn handler(ctx: Context<Fulfill>, is_win: bool) -> Result<()> {
         header: MatchEventHeader {
             signer: Some(ctx.accounts.operator.key()),
             config: config.key(),
-            pool: pool.key(),
+            pool: ctx.accounts.pool.key(),
             playmatch: ctx.accounts.playmatch.key(),
         },
         is_win: is_win,
