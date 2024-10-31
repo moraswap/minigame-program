@@ -10,7 +10,7 @@ function tokens(amount: string | number, decimals: number = 0): anchor.BN {
   return new anchor.BN(parseFloat(amount.toString()) * (10 ** decimals));
 }
 
-describe("minigame", () => {
+describe("minigame", () => { // blowfish 3940
   // Configure the client to use the local cluster.
   let provider = anchor.AnchorProvider.env();
   let connection = provider.connection;
